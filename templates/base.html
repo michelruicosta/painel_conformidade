@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Conformidade — Finaud</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-logo">📋</span>
+        <div>
+          <div class="header-title">Painel de Conformidade</div>
+          <div class="header-sub">Finaud Tec · Uso interno</div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a href="/" class="nav-link {% if pagina == 'dashboard' %}active{% endif %}">Dashboard</a>
+        {% for area in areas %}
+        <a href="/area/{{ area.slug }}"
+           class="nav-link {% if pagina == area.slug %}active{% endif %}">
+          {{ area.icone }} {{ area.nome }}
+          <span class="nav-badge {% if area.score == 100 %}badge-verde{% elif area.score >= 70 %}badge-amarelo{% else %}badge-vermelho{% endif %}">
+            {{ area.score }}%
+          </span>
+        </a>
+        {% endfor %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Modal de edição -->
+  <div class="modal-overlay" id="modal" onclick="fecharModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <span class="modal-titulo" id="modal-titulo">Editar controle</span>
+        <button class="modal-fechar" onclick="fecharModal()">✕</button>
+      </div>
+      <form method="POST" id="modal-form">
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="status" value="conforme" id="r-conforme">
+              <span class="radio-dot verde"></span> Conforme
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="status" value="pendente" id="r-pendente">
+              <span class="radio-dot amarelo"></span> Pendente
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="status" value="vencido" id="r-vencido">
+              <span class="radio-dot vermelho"></span> Vencido
+            </label>
+          </div>
+        </div>
+        <div class="form-group" id="grupo-revisao">
+          <label class="form-label">Próxima revisão <span class="form-hint">(deixe em branco para calcular automaticamente)</span></label>
+          <input type="date" name="proxima_revisao" id="input-revisao" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas</label>
+          <textarea name="notas" id="input-notas" class="form-textarea" rows="3" placeholder="Observações, evidências, links..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="fecharModal()" class="btn btn-secundario">Cancelar</button>
+          <button type="submit" class="btn btn-primario">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

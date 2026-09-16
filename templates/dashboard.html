@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">Visão Geral</h1>
+  <div class="page-sub">Atualizado em tempo real · {{ conformes }}/{{ total }} controles conformes</div>
+</div>
+
+<!-- Score global -->
+<div class="score-global">
+  <div class="score-numero {% if score_global == 100 %}verde{% elif score_global >= 70 %}amarelo{% else %}vermelho{% endif %}">
+    {{ score_global }}%
+  </div>
+  <div class="score-label">Score global de conformidade</div>
+  <div class="score-barra-wrap">
+    <div class="score-barra" style="width: {{ score_global }}%;
+      background: {% if score_global == 100 %}var(--verde){% elif score_global >= 70 %}var(--amarelo){% else %}var(--vermelho){% endif %};">
+    </div>
+  </div>
+</div>
+
+<!-- Cards por área -->
+<div class="cards-grid">
+  {% for area in areas %}
+  <a href="/area/{{ area.slug }}" class="card">
+    <div class="card-icone">{{ area.icone }}</div>
+    <div class="card-nome">{{ area.nome }}</div>
+    <div class="card-score {% if area.score == 100 %}verde{% elif area.score >= 70 %}amarelo{% else %}vermelho{% endif %}">
+      {{ area.score }}%
+    </div>
+    <div class="card-detalhe">{{ area.conformes }}/{{ area.total }} conformes</div>
+    <div class="card-barra-wrap">
+      <div class="card-barra" style="width: {{ area.score }}%;
+        background: {% if area.score == 100 %}var(--verde){% elif area.score >= 70 %}var(--amarelo){% else %}var(--vermelho){% endif %};">
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+
+<!-- Críticos -->
+{% if criticos %}
+<section class="secao">
+  <h2 class="secao-titulo"><span class="dot vermelho"></span> Atenção imediata ({{ criticos|length }})</h2>
+  <div class="lista-controles">
+    {% for c in criticos %}
+    <div class="controle-row" onclick="abrirModal({{ c.id }}, '{{ c.nome|replace("'", "\\'") }}', '{{ c.status }}', '{{ c.notas|replace("'", "\\'")|replace('\n', ' ') }}', '{{ c.proxima_revisao.isoformat() if c.proxima_revisao else "" }}')">
+      <span class="dot {{ c.cor }}"></span>
+      <div class="controle-info">
+        <span class="controle-nome">{{ c.nome }}</span>
+        <span class="controle-meta">
+          {{ c.area.icone }} {{ c.area.nome }} ·
+          {% for i in range(c.peso_risco) %}⭐{% endfor %}
+          · {{ c.proxima_revisao_str }}
+        </span>
+      </div>
+      <span class="controle-tag tag-{{ c.cor }}">{{ c.status|capitalize }}</span>
+      <span class="controle-editar">Editar →</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- Próximas revisões -->
+{% if proximos %}
+<section class="secao">
+  <h2 class="secao-titulo"><span class="dot amarelo"></span> Revisões nos próximos 30 dias ({{ proximos|length }})</h2>
+  <div class="lista-controles">
+    {% for c in proximos %}
+    <div class="controle-row" onclick="abrirModal({{ c.id }}, '{{ c.nome|replace("'", "\\'") }}', '{{ c.status }}', '{{ c.notas|replace("'", "\\'")|replace('\n', ' ') }}', '{{ c.proxima_revisao.isoformat() if c.proxima_revisao else "" }}')">
+      <span class="dot verde"></span>
+      <div class="controle-info">
+        <span class="controle-nome">{{ c.nome }}</span>
+        <span class="controle-meta">
+          {{ c.area.icone }} {{ c.area.nome }} ·
+          Revisão em {{ c.dias_para_revisao }} dias ({{ c.proxima_revisao_str }})
+        </span>
+      </div>
+      <span class="controle-tag tag-verde">Conforme</span>
+      <span class="controle-editar">Editar →</span>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not criticos and not proximos %}
+<div class="tudo-ok">
+  <div class="tudo-ok-icone">✅</div>
+  <div class="tudo-ok-texto">Tudo em ordem! Nenhuma ação imediata necessária.</div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header">
+  <h1 class="page-title">{{ area.icone }} {{ area.nome }}</h1>
+  <div class="page-sub">{{ area.descricao }}</div>
+</div>
+
+<!-- Score da área -->
+<div class="area-score-bar">
+  <div class="area-score-info">
+    <span class="area-score-num {% if area.score == 100 %}verde{% elif area.score >= 70 %}amarelo{% else %}vermelho{% endif %}">
+      {{ area.score }}%
+    </span>
+    <span class="area-score-label">{{ area.conformes }}/{{ area.total }} conformes</span>
+  </div>
+  <div class="score-barra-wrap">
+    <div class="score-barra" style="width: {{ area.score }}%;
+      background: {% if area.score == 100 %}var(--verde){% elif area.score >= 70 %}var(--amarelo){% else %}var(--vermelho){% endif %};">
+    </div>
+  </div>
+</div>
+
+<!-- Lista de controles -->
+<div class="lista-controles lista-area">
+  {% for c in controles %}
+  <div class="controle-row controle-row-area"
+       onclick="abrirModal({{ c.id }}, '{{ c.nome|replace("'", "\\'") }}', '{{ c.status }}', '{{ c.notas|replace("'", "\\'")|replace('\n', ' ') }}', '{{ c.proxima_revisao.isoformat() if c.proxima_revisao else "" }}')">
+
+    <span class="dot {{ c.cor }} dot-lg"></span>
+
+    <div class="controle-info controle-info-area">
+      <div class="controle-nome">{{ c.nome }}</div>
+      <div class="controle-descricao">{{ c.descricao }}</div>
+      <div class="controle-meta">
+        {% for i in range(c.peso_risco) %}<span class="estrela">★</span>{% endfor %}
+        {% for i in range(3 - c.peso_risco) %}<span class="estrela dim">★</span>{% endfor %}
+        <span class="sep">·</span>
+        <span>{{ c.periodicidade|capitalize }}</span>
+        <span class="sep">·</span>
+        <span>{{ c.proxima_revisao_str }}</span>
+        {% if c.ultima_atualizacao %}
+        <span class="sep">·</span>
+        <span>Atualizado {{ c.ultima_atualizacao.strftime('%d/%m/%Y') }}</span>
+        {% endif %}
+      </div>
+      {% if c.notas %}
+      <div class="controle-notas">{{ c.notas }}</div>
+      {% endif %}
+    </div>
+
+    <div class="controle-acoes">
+      <span class="controle-tag tag-{{ c.cor }}">
+        {% if c.status == 'conforme' %}✓ Conforme
+        {% elif c.status == 'vencido' %}✗ Vencido
+        {% else %}⏳ Pendente{% endif %}
+      </span>
+      <span class="controle-editar">Editar →</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
