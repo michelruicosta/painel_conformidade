@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 from contextlib import asynccontextmanager
@@ -62,22 +63,40 @@ def health():
 
 # ── dashboard ────────────────────────────────────────────────────────────────
 
+_CATEGORIAS_ORDEM = ["Política", "Procedimento", "Governança", "Técnico", "Certificado"]
+
+
 @app.get("/", response_class=HTMLResponse)
 def dashboard(request: Request, db: Session = Depends(get_db)):
-    docs = db.query(Documento).order_by(Documento.categoria, Documento.nome).all()
+    docs = db.query(Documento).order_by(Documento.nome).all()
 
-    vencidos = [d for d in docs if d.status == "vencido"]
-    atencao  = [d for d in docs if d.status == "atencao"]
-    em_dia   = [d for d in docs if d.status == "em_dia"]
-    sem_data = [d for d in docs if d.status == "sem_data"]
+    por_categoria: dict[str, list] = {}
+    for cat in _CATEGORIAS_ORDEM:
+        cat_docs = [d for d in docs if d.categoria == cat]
+        if cat_docs:
+            por_categoria[cat] = cat_docs
+    for d in docs:
+        if d.categoria not in por_categoria:
+            por_categoria.setdefault(d.categoria, []).append(d)
+
+    docs_json = json.dumps([{
+        "id":           d.id,
+        "nome":         d.nome,
+        "categoria":    d.categoria,
+        "periodicidade":d.periodicidade,
+        "versao":       d.versao_atual,
+        "proxima_versao": d.proxima_versao_sugerida,
+        "prazo_str":    d.proxima_revisao_str,
+        "dias":         d.dias_para_revisao,
+        "status":       d.status,
+        "tem_arquivo":  bool(d.arquivo and d.categoria != "Certificado"),
+    } for d in docs], ensure_ascii=False)
 
     return templates.TemplateResponse(request, "dashboard.html", {
-        "request":  request,
-        "vencidos": vencidos,
-        "atencao":  atencao,
-        "em_dia":   em_dia,
-        "sem_data": sem_data,
-        "total":    len(docs),
+        "request":       request,
+        "por_categoria": por_categoria,
+        "docs_json":     docs_json,
+        "total":         len(docs),
     })
 
 

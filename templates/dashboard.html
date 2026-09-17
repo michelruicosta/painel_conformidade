@@ -6,67 +6,70 @@
   <title>Painel de Conformidade — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=2">
+  <link rel="stylesheet" href="/static/css/style.css?v=4">
 </head>
 <body>
 
-<header class="header">
-  <div class="header-inner">
-    <div class="header-brand">
-      <img src="/static/img/logo_finaud.png" alt="Finaud Tec" style="height:28px;">
-      <div style="margin-left:10px;">
-        <div class="header-title">Painel de Conformidade</div>
-        <div class="header-sub">Uso interno</div>
-      </div>
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;opacity:.9;">
+      <div class="brand-sub">Painel de Conformidade</div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <div class="header-resumo">
-        <span class="badge badge-vencido">{{ vencidos|length }} vencido{{ 's' if vencidos|length != 1 }}</span>
-        <span class="badge badge-atencao">{{ atencao|length }} vence em breve</span>
-        <span class="badge badge-ok">{{ em_dia|length }} em dia</span>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Visão geral</div>
+      <button class="nav-item active" onclick="navDash(this)">
+        <span class="nav-icon">◉</span> Dashboard
+      </button>
+
+      <div class="nav-label">Documentos</div>
+
+      {% for cat, cat_docs in por_categoria.items() %}
+      {% set n_alerta = (cat_docs | selectattr("status", "equalto", "vencido") | list | length) + (cat_docs | selectattr("status", "equalto", "atencao") | list | length) %}
+      <button class="nav-item" onclick="toggleCat(this,'cat-{{ loop.index }}')">
+        <span class="nav-nome">{{ cat }}</span>
+        <span class="nav-count">{{ cat_docs | length }}</span>
+        {% if n_alerta > 0 %}<span class="nav-dot"></span>{% endif %}
+        <span class="nav-chevron">›</span>
+      </button>
+      <div class="sub-list" id="cat-{{ loop.index }}">
+        {% for d in cat_docs %}
+        <a class="sub-item {% if d.status in ['vencido','atencao'] %}sub-alerta{% endif %}"
+           href="/ver/{{ d.id }}" target="_blank">
+          {% if d.status in ['vencido','atencao'] %}<span class="sub-dot"></span>{% endif %}
+          {{ d.nome }}
+        </a>
+        {% endfor %}
       </div>
-      <a href="/pacote" class="btn-pacote" target="_blank">📦 Pacote due diligence</a>
+      {% endfor %}
+    </nav>
+
+    <div class="sidebar-foot">{{ total }} documentos</div>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <div class="topbar-sep"></div>
+      <a href="/pacote" class="btn-acao" target="_blank">Pacote due diligence</a>
     </div>
+
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn" onclick="setFiltro(7)"  id="f7">7 dias <span class="fbadge" id="c7">0</span></button>
+      <button class="filter-btn on"  onclick="setFiltro(30)" id="f30">30 dias <span class="fbadge" id="c30">0</span></button>
+      <button class="filter-btn" onclick="setFiltro(90)" id="f90">90 dias <span class="fbadge" id="c90">0</span></button>
+      <button class="filter-btn" onclick="setFiltro(0)"  id="f0">Todos <span class="fbadge" id="c0">0</span></button>
+    </div>
+
+    <div class="content" id="content"></div>
+
   </div>
-</header>
-
-<main class="main">
-
-  {% if vencidos %}
-  <section class="secao">
-    <h2 class="secao-titulo vermelho">⚠ Vencidos ({{ vencidos|length }})</h2>
-    <div class="lista">
-      {% for d in vencidos %}{% include "partials/doc_row.html" %}{% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if atencao %}
-  <section class="secao">
-    <h2 class="secao-titulo amarelo">⏰ Vencendo em breve ({{ atencao|length }})</h2>
-    <div class="lista">
-      {% for d in atencao %}{% include "partials/doc_row.html" %}{% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  {% if sem_data %}
-  <section class="secao">
-    <h2 class="secao-titulo cinza">? Sem data ({{ sem_data|length }})</h2>
-    <div class="lista">
-      {% for d in sem_data %}{% include "partials/doc_row.html" %}{% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-  <section class="secao">
-    <h2 class="secao-titulo verde">✓ Em dia ({{ em_dia|length }})</h2>
-    <div class="lista">
-      {% for d in em_dia %}{% include "partials/doc_row.html" %}{% endfor %}
-    </div>
-  </section>
-
-</main>
+</div>
 
 <!-- Modal de revisão -->
 <div class="modal-overlay" id="modal" onclick="fecharModal(event)">
@@ -93,6 +96,7 @@
   </div>
 </div>
 
-<script src="/static/js/app.js"></script>
+<script>const DOCS = {{ docs_json | safe }};</script>
+<script src="/static/js/app.js?v=4"></script>
 </body>
 </html>
