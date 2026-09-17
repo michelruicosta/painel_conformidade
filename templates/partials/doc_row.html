@@ -1,0 +1,10 @@
+<div class="doc-row status-{{ d.status }}"
+     onclick="abrirModal({{ d.id }}, '{{ d.nome|replace("'", "\\'") }}', '{{ d.notas|replace("'", "\\'")|replace('\n',' ') if d.notas else '' }}')">
+  <div class="doc-cat">{{ d.categoria }}</div>
+  <div class="doc-nome">{{ d.nome }}</div>
+  <div class="doc-period">{{ d.periodicidade }}</div>
+  <div class="doc-data">{{ d.proxima_revisao_str }}</div>
+  <div class="doc-acao">
+    <span class="doc-btn">Revisar →</span>
+  </div>
+</div>

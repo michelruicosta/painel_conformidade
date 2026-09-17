@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Conformidade — Finaud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=1">
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <div class="header-brand">
+      <span class="header-logo">📋</span>
+      <div>
+        <div class="header-title">Painel de Conformidade</div>
+        <div class="header-sub">Finaud Tec · Uso interno</div>
+      </div>
+    </div>
+    <div class="header-resumo">
+      <span class="badge badge-vencido">{{ vencidos|length }} vencido{{ 's' if vencidos|length != 1 }}</span>
+      <span class="badge badge-atencao">{{ atencao|length }} vence em breve</span>
+      <span class="badge badge-ok">{{ em_dia|length }} em dia</span>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+  {% if vencidos %}
+  <section class="secao">
+    <h2 class="secao-titulo vermelho">⚠ Vencidos ({{ vencidos|length }})</h2>
+    <div class="lista">
+      {% for d in vencidos %}
+      {% include "partials/doc_row.html" %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if atencao %}
+  <section class="secao">
+    <h2 class="secao-titulo amarelo">⏰ Vencendo em breve ({{ atencao|length }})</h2>
+    <div class="lista">
+      {% for d in atencao %}
+      {% include "partials/doc_row.html" %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  {% if sem_data %}
+  <section class="secao">
+    <h2 class="secao-titulo cinza">? Sem data de revisão ({{ sem_data|length }})</h2>
+    <div class="lista">
+      {% for d in sem_data %}
+      {% include "partials/doc_row.html" %}
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="secao">
+    <h2 class="secao-titulo verde">✓ Em dia ({{ em_dia|length }})</h2>
+    <div class="lista">
+      {% for d in em_dia %}
+      {% include "partials/doc_row.html" %}
+      {% endfor %}
+    </div>
+  </section>
+
+</main>
+
+<!-- Modal de revisão -->
+<div class="modal-overlay" id="modal" onclick="fecharModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span class="modal-titulo" id="modal-titulo">Marcar como revisado</span>
+      <button class="modal-fechar" onclick="fecharModal()">✕</button>
+    </div>
+    <form method="POST" id="modal-form">
+      <div class="form-group">
+        <label class="form-label">Notas da revisão <span class="form-hint">(opcional)</span></label>
+        <textarea name="notas" id="modal-notas" class="form-textarea" rows="3"
+          placeholder="Observações, o que foi verificado, links de evidência..."></textarea>
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="fecharModal()" class="btn btn-sec">Cancelar</button>
+        <button type="submit" class="btn btn-pri">Confirmar revisão — hoje</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
