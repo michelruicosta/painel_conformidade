@@ -17,9 +17,10 @@ from .database import Base, engine, get_db, SessionLocal
 from .models import Documento, Revisao
 from .seed import popular_banco
 
-TEMPLATES_DIR = Path(__file__).resolve().parent.parent / "templates"
-STATIC_DIR    = Path(__file__).resolve().parent.parent / "static"
-FINDABC_DIR   = Path("D:/02_Finaud/Projetos/ativos/findabc")
+TEMPLATES_DIR   = Path(__file__).resolve().parent.parent / "templates"
+STATIC_DIR      = Path(__file__).resolve().parent.parent / "static"
+FINDABC_DIR     = Path("D:/02_Finaud/Projetos/ativos/findabc")
+AUDIT_REPORT_DIR = Path(r"D:\02_Finaud\Projetos\ativos\_auditoria_seguranca\relatorios")
 
 
 @asynccontextmanager
@@ -38,6 +39,8 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Painel de Conformidade — Finaud", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+if AUDIT_REPORT_DIR.exists():
+    app.mount("/relatorios", StaticFiles(directory=AUDIT_REPORT_DIR), name="relatorios")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
@@ -195,6 +198,21 @@ def pacote_due_diligence(request: Request, db: Session = Depends(get_db)):
         "docs":    docs,
         "hoje":    date.today(),
     })
+
+# ── segurança — painel de auditoria de segurança ─────────────────────────────
+
+@app.get("/seguranca", response_class=HTMLResponse)
+def seguranca(request: Request):
+    summary_path = AUDIT_REPORT_DIR / "latest_summary.json"
+    if summary_path.exists():
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    else:
+        summary = None
+    return templates.TemplateResponse(request, "seguranca.html", {
+        "request": request,
+        "summary": summary,
+    })
+
 
 # ── /p/{token} — reservado para Opção 2 (portal do cliente, pós-deploy) ─────
 # @app.get("/p/{token}", response_class=HTMLResponse)

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auditoria de Segurança — Finaud</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=4">
+  <style>
+    .sec-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .sec-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 16px 14px;
+      text-align: center;
+    }
+    .sec-card .sec-num {
+      font-size: 2rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .sec-card .sec-label {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .sec-card.ok   .sec-num { color: #22c55e; }
+    .sec-card.warn .sec-num { color: #f59e0b; }
+    .sec-card.bad  .sec-num { color: #ef4444; }
+    .sec-card.info .sec-num { color: #60a5fa; }
+
+    .sec-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+    .sec-table th { text-align: left; padding: 8px 10px; background: var(--sidebar-bg);
+                    border-bottom: 1px solid var(--border); font-weight: 500; }
+    .sec-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+    .sec-table tr:last-child td { border-bottom: none; }
+    .sec-table tr:hover td { background: var(--hover); }
+    .badge { display:inline-block; min-width:22px; padding:2px 6px;
+             border-radius:4px; font-size:.77rem; font-weight:600; text-align:center; }
+    .badge-ok   { background:#dcfce7; color:#166534; }
+    .badge-warn { background:#fef9c3; color:#854d0e; }
+    .badge-bad  { background:#fee2e2; color:#991b1b; }
+    .badge-info { background:#dbeafe; color:#1e40af; }
+
+    .sec-meta { font-size:.82rem; color:var(--text-muted); margin-bottom:18px; }
+    .sec-link { color: var(--accent); text-decoration: none; font-size:.85rem; }
+    .sec-link:hover { text-decoration: underline; }
+    .no-audit { padding: 40px; text-align:center; color:var(--text-muted); font-size:.9rem; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;opacity:.9;">
+      <div class="brand-sub">Painel de Conformidade</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Visão geral</div>
+      <a href="/" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">◉</span> Dashboard
+      </a>
+
+      <div class="nav-label">Relatórios</div>
+      <a href="/pacote" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">📋</span>
+        <span class="nav-nome">Auditoria</span>
+      </a>
+      <a href="/seguranca" class="nav-item active" style="text-decoration:none">
+        <span class="nav-icon">🔒</span>
+        <span class="nav-nome">Segurança</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title">Segurança dos Projetos</span>
+    </div>
+
+    <div class="content" style="padding: 24px;">
+
+      {% if summary %}
+
+        <p class="sec-meta">
+          Última auditoria: <strong>{{ summary.generated_at }}</strong>
+          &nbsp;·&nbsp;
+          <a class="sec-link" href="/relatorios/{{ summary.report_file }}" target="_blank">
+            Ver relatório completo →
+          </a>
+        </p>
+
+        <!-- Cards de resumo -->
+        <div class="sec-grid">
+          <div class="sec-card {% if summary.total_cves == 0 %}ok{% elif summary.total_cves <= 3 %}warn{% else %}bad{% endif %}">
+            <div class="sec-num">{{ summary.total_cves }}</div>
+            <div class="sec-label">Vulnerabilidades<br>(CVEs)</div>
+          </div>
+          <div class="sec-card {% if summary.total_sast == 0 %}ok{% elif summary.total_sast <= 5 %}warn{% else %}bad{% endif %}">
+            <div class="sec-num">{{ summary.total_sast }}</div>
+            <div class="sec-label">Problemas<br>de código (SAST)</div>
+          </div>
+          <div class="sec-card {% if summary.secrets_git == 0 %}ok{% else %}bad{% endif %}">
+            <div class="sec-num">{{ summary.secrets_git }}</div>
+            <div class="sec-label">Segredos no git<br>(urgente)</div>
+          </div>
+          <div class="sec-card {% if summary.secrets_disk == 0 %}ok{% else %}warn{% endif %}">
+            <div class="sec-num">{{ summary.secrets_disk }}</div>
+            <div class="sec-label">Segredos só<br>no disco</div>
+          </div>
+          <div class="sec-card {% if summary.total_licenses == 0 %}ok{% else %}warn{% endif %}">
+            <div class="sec-num">{{ summary.total_licenses }}</div>
+            <div class="sec-label">Licenças<br>problemáticas</div>
+          </div>
+          <div class="sec-card info">
+            <div class="sec-num">{{ summary.total_suprimidos }}</div>
+            <div class="sec-label">Suprimidos c/<br># nosec</div>
+          </div>
+          <div class="sec-card ok">
+            <div class="sec-num">{{ summary.clean_projects }}/{{ summary.total_projects }}</div>
+            <div class="sec-label">Projetos<br>completamente limpos</div>
+          </div>
+        </div>
+
+        <!-- Tabela por projeto -->
+        <h3 style="font-size:.9rem; font-weight:600; margin-bottom:10px; color:var(--text)">Por projeto</h3>
+        <table class="sec-table">
+          <thead>
+            <tr>
+              <th>Projeto</th>
+              <th style="text-align:center">CVEs</th>
+              <th style="text-align:center">SAST</th>
+              <th style="text-align:center">Segredos (git)</th>
+              <th style="text-align:center">Segredos (disco)</th>
+              <th style="text-align:center">Licenças</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in summary.projects %}
+            {% set total_p = p.cves + p.sast + p.secrets_git + p.secrets_disk + p.licenses %}
+            <tr>
+              <td>{{ p.name }}</td>
+              <td style="text-align:center">
+                <span class="badge {% if p.cves == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.cves }}</span>
+              </td>
+              <td style="text-align:center">
+                <span class="badge {% if p.sast == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.sast }}</span>
+              </td>
+              <td style="text-align:center">
+                <span class="badge {% if p.secrets_git == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.secrets_git }}</span>
+              </td>
+              <td style="text-align:center">
+                <span class="badge {% if p.secrets_disk == 0 %}badge-ok{% else %}badge-warn{% endif %}">{{ p.secrets_disk }}</span>
+              </td>
+              <td style="text-align:center">
+                <span class="badge {% if p.licenses == 0 %}badge-ok{% else %}badge-warn{% endif %}">{{ p.licenses }}</span>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+      {% else %}
+        <div class="no-audit">
+          <p>Nenhuma auditoria encontrada.</p>
+          <p style="margin-top:8px">Execute <code>security_audit.py</code> para gerar o primeiro relatório.</p>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
