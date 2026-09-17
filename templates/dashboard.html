@@ -15,46 +15,64 @@
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;width:auto;display:block;opacity:.9;">
+      <img src="/static/img/logo_finaud.png" alt="Finaud">
       <div class="brand-sub">Painel de Conformidade</div>
     </div>
 
     <nav class="sidebar-nav">
-      <div class="nav-label">Visão geral</div>
+
+      <!-- Visão Geral -->
       <button class="nav-item active" onclick="navDash(this)">
-        <span class="nav-icon">◉</span> Dashboard
+        <span class="nav-icon">◉</span>
+        <span class="nav-nome">Visão Geral</span>
       </button>
 
-      <div class="nav-label">Documentos</div>
-
-      {% for cat, cat_docs in por_categoria.items() %}
-      {% set n_alerta = (cat_docs | selectattr("status", "equalto", "vencido") | list | length) + (cat_docs | selectattr("status", "equalto", "atencao") | list | length) %}
-      <button class="nav-item" onclick="toggleCat(this,'cat-{{ loop.index }}')">
-        <span class="nav-nome">{{ cat }}</span>
-        <span class="nav-count">{{ cat_docs | length }}</span>
-        {% if n_alerta > 0 %}<span class="nav-dot"></span>{% endif %}
+      <!-- Documentos -->
+      <button class="nav-item" onclick="toggleSec(this,'sec-docs')">
+        <span class="nav-icon">📁</span>
+        <span class="nav-nome">Documentos</span>
+        <span class="nav-count">{{ total }}</span>
         <span class="nav-chevron">›</span>
       </button>
-      <div class="sub-list" id="cat-{{ loop.index }}">
-        {% for d in cat_docs %}
-        <a class="sub-item {% if d.status in ['vencido','atencao'] %}sub-alerta{% endif %}"
-           href="/ver/{{ d.id }}" target="_blank">
-          {% if d.status in ['vencido','atencao'] %}<span class="sub-dot"></span>{% endif %}
-          {{ d.nome }}
-        </a>
+      <div class="nav-section" id="sec-docs">
+        {% for cat, cat_docs in por_categoria.items() %}
+        {% set n_alerta = (cat_docs | selectattr("status", "equalto", "vencido") | list | length) + (cat_docs | selectattr("status", "equalto", "atencao") | list | length) %}
+        <button class="nav-item nav-sub" onclick="toggleCat(this,'cat-{{ loop.index }}','{{ cat }}')">
+          <span class="nav-nome">{{ cat }}</span>
+          <span class="nav-count">{{ cat_docs | length }}</span>
+          {% if n_alerta > 0 %}<span class="nav-dot"></span>{% endif %}
+          <span class="nav-chevron">›</span>
+        </button>
+        <div class="sub-list" id="cat-{{ loop.index }}">
+          {% for d in cat_docs %}
+          <a class="sub-item {% if d.status in ['vencido','atencao'] %}sub-alerta{% endif %}"
+             href="/ver/{{ d.id }}" target="_blank">
+            {% if d.status in ['vencido','atencao'] %}<span class="sub-dot"></span>{% endif %}
+            {{ d.nome }}
+          </a>
+          {% endfor %}
+        </div>
         {% endfor %}
       </div>
-      {% endfor %}
 
-      <div class="nav-label">Relatórios</div>
+      <!-- Auditorias -->
       <a href="/pacote" class="nav-item" style="text-decoration:none">
         <span class="nav-icon">📋</span>
-        <span class="nav-nome">Auditoria</span>
+        <span class="nav-nome">Auditorias</span>
       </a>
-      <a href="/seguranca" class="nav-item" style="text-decoration:none">
-        <span class="nav-icon">🔒</span>
-        <span class="nav-nome">Segurança</span>
-      </a>
+
+      <!-- Administrador -->
+      <button class="nav-item" onclick="toggleSec(this,'sec-admin')">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-nome">Administrador</span>
+        <span class="nav-chevron">›</span>
+      </button>
+      <div class="nav-section" id="sec-admin">
+        <a href="/seguranca" class="sub-item" style="text-decoration:none">
+          🔒 Segurança
+        </a>
+      </div>
+
     </nav>
 
     <div class="sidebar-foot">{{ total }} documentos</div>
@@ -64,7 +82,7 @@
   <div class="main">
 
     <div class="topbar">
-      <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <span class="topbar-title" id="topbar-title">Visão Geral</span>
     </div>
 
     <div class="filter-bar" id="filter-bar">
@@ -80,6 +98,6 @@
 </div>
 
 <script>const DOCS = {{ docs_json | safe }};</script>
-<script src="/static/js/app.js?v=4"></script>
+<script src="/static/js/app.js?v=5"></script>
 </body>
 </html>

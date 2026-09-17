@@ -134,12 +134,20 @@ if (typeof DOCS !== 'undefined') {
   function navDash(btn) {
     document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    document.getElementById('topbar-title').textContent = 'Dashboard';
+    document.getElementById('topbar-title').textContent = 'Visão Geral';
     document.getElementById('filter-bar').style.display = 'flex';
     setFiltro(filtroAtual);
   }
 
-  function toggleCat(btn, id) {
+  function toggleSec(btn, id) {
+    var sec = document.getElementById(id);
+    var chevron = btn.querySelector('.nav-chevron');
+    var isOpen = sec.classList.contains('open');
+    sec.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+
+  function toggleCat(btn, id, catNome) {
     var list = document.getElementById(id);
     var chevron = btn.querySelector('.nav-chevron');
     var isOpen = list.classList.contains('open');
@@ -147,12 +155,62 @@ if (typeof DOCS !== 'undefined') {
     chevron.classList.toggle('open', !isOpen);
     document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
     btn.classList.add('active');
+    if (!isOpen) {
+      renderCategoria(catNome);
+    } else {
+      document.getElementById('filter-bar').style.display = 'flex';
+      document.getElementById('topbar-title').textContent = 'Visão Geral';
+      setFiltro(filtroAtual);
+    }
+  }
+
+  /* ── Cards de categoria ── */
+  function catCardHTML(d) {
+    var cls = urgClass(d.dias);
+    var prazo = prazoStr(d.dias, d.prazo_str);
+    var statusMap = { vencido: 'Vencido', urgente: 'Urgente', breve: 'Vence em breve', ok: 'Em dia' };
+    var statusLabel = statusMap[cls] || 'Em dia';
+    return '<a class="cat-card cat-card-' + cls + '" href="/ver/' + d.id + '">' +
+      '<div class="cat-card-body">' +
+        '<div class="cat-card-nome">' + d.nome + '</div>' +
+        '<div class="cat-card-meta">' +
+          '<span class="cat-tag">' + d.periodicidade + '</span>' +
+          '<span class="cat-prazo">' + prazo + '</span>' +
+          '<span class="cat-status cat-status-' + cls + '">' + statusLabel + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<span class="cat-abrir">Abrir →</span>' +
+    '</a>';
+  }
+
+  function renderCategoria(catNome) {
+    var docs = DOCS.filter(function (d) { return d.categoria === catNome; });
+    docs.sort(function (a, b) {
+      var da = a.dias === null ? 9999 : a.dias;
+      var db = b.dias === null ? 9999 : b.dias;
+      return da - db;
+    });
+    var html = '<div class="cat-view">' +
+      '<div class="secao-titulo">' +
+        '<span class="secao-label muted">' + catNome.toUpperCase() + '</span>' +
+        '<div class="secao-linha"></div>' +
+        '<span style="font-size:12px;color:var(--muted)">' + docs.length + ' documento' + (docs.length !== 1 ? 's' : '') + '</span>' +
+      '</div>' +
+      '<div class="cat-lista">' +
+        docs.map(catCardHTML).join('<div class="cat-sep"></div>') +
+      '</div>' +
+    '</div>';
+    document.getElementById('content').innerHTML = html;
+    document.getElementById('topbar-title').textContent = catNome;
+    document.getElementById('filter-bar').style.display = 'none';
   }
 
   /* Expõe funções globais usadas pelo template */
-  window.setFiltro   = setFiltro;
-  window.navDash     = navDash;
-  window.toggleCat   = toggleCat;
+  window.setFiltro       = setFiltro;
+  window.navDash         = navDash;
+  window.toggleSec       = toggleSec;
+  window.toggleCat       = toggleCat;
+  window.renderCategoria = renderCategoria;
 
   /* Init */
   atualizarBadges();
