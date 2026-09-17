@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisar — {{ doc.nome }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=5">
+</head>
+<body class="ed-page">
+
+<div class="ed-topbar">
+  <a href="/" class="ed-back">← Painel</a>
+  <div class="ed-info">
+    <span class="ed-nome">{{ doc.nome }}</span>
+    <span class="ed-sep">·</span>
+    <span class="ed-cat">{{ doc.categoria }}</span>
+    {% if doc.versao_atual != '—' %}
+    <span class="ed-sep">·</span>
+    <span class="ed-ver">v{{ doc.versao_atual }}</span>
+    {% endif %}
+    {% if doc.ultima_revisao %}
+    <span class="ed-sep">·</span>
+    <span class="ed-ultima">Última revisão: {{ doc.ultima_revisao.strftime('%d/%m/%Y') }}{% if doc.ultima_revisao_hora %} às {{ doc.ultima_revisao_hora }}{% endif %}</span>
+    {% endif %}
+  </div>
+</div>
+
+<form method="POST" action="/editar/{{ doc.id }}" class="ed-body">
+
+  {% if tem_arquivo %}
+  <div class="ed-editor">
+    <div class="ed-label">Conteúdo do documento</div>
+    <textarea name="conteudo" class="ed-textarea" spellcheck="false">{{ conteudo }}</textarea>
+  </div>
+  {% else %}
+  <input type="hidden" name="conteudo" value="">
+  <div class="ed-sem-arquivo">
+    <div class="ed-sem-ico">📄</div>
+    <div class="ed-sem-t">Sem arquivo vinculado</div>
+    <div class="ed-sem-sub">A revisão será registrada sem edição de conteúdo.</div>
+  </div>
+  {% endif %}
+
+  <div class="ed-aside">
+    <div class="ed-aside-titulo">Registrar revisão</div>
+
+    <div class="form-group">
+      <label class="form-label">Nova versão</label>
+      <input type="text" name="versao" class="form-input" value="{{ doc.proxima_versao_sugerida }}" required>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">O que foi revisado / alterado</label>
+      <textarea name="notas" class="form-textarea" rows="5"
+        placeholder="Descreva o que foi verificado, o que mudou, ou justifique caso nada tenha sido alterado..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Revisor</label>
+      <input type="text" name="revisor" class="form-input" value="{{ doc.responsavel or 'Michel Rui Costa' }}">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Data e hora</label>
+      <div class="ed-datahora" id="ed-datahora">—</div>
+    </div>
+
+    <div class="ed-acoes">
+      <button type="submit" class="btn btn-pri">Salvar e registrar</button>
+      <a href="/" class="btn btn-sec">Cancelar</a>
+    </div>
+  </div>
+
+</form>
+
+<script src="/static/js/app.js?v=5"></script>
+<script>
+  (function () {
+    var el = document.getElementById('ed-datahora');
+    function tick() {
+      var d = new Date();
+      el.textContent = d.toLocaleDateString('pt-BR') + ' às ' +
+        d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
+</body>
+</html>

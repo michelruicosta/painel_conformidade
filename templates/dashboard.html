@@ -45,6 +45,12 @@
         {% endfor %}
       </div>
       {% endfor %}
+
+      <div class="nav-label">Relatórios</div>
+      <a href="/pacote" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">📋</span>
+        <span class="nav-nome">Auditoria</span>
+      </a>
     </nav>
 
     <div class="sidebar-foot">{{ total }} documentos</div>
@@ -55,8 +61,6 @@
 
     <div class="topbar">
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <div class="topbar-sep"></div>
-      <a href="/pacote" class="btn-acao" target="_blank">Pacote due diligence</a>
     </div>
 
     <div class="filter-bar" id="filter-bar">
@@ -68,31 +72,6 @@
 
     <div class="content" id="content"></div>
 
-  </div>
-</div>
-
-<!-- Modal de revisão -->
-<div class="modal-overlay" id="modal" onclick="fecharModal(event)">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <span class="modal-titulo" id="modal-titulo">Registrar revisão</span>
-      <button class="modal-fechar" onclick="fecharModal()">✕</button>
-    </div>
-    <form method="POST" id="modal-form">
-      <div class="form-group">
-        <label class="form-label">Versão <span class="form-hint">(sugerida automaticamente)</span></label>
-        <input type="text" name="versao" id="modal-versao" class="form-input" required>
-      </div>
-      <div class="form-group">
-        <label class="form-label">O que foi revisado / alterado</label>
-        <textarea name="notas" id="modal-notas" class="form-textarea" rows="3"
-          placeholder="Descreva brevemente o que foi verificado ou alterado..."></textarea>
-      </div>
-      <div class="modal-footer">
-        <button type="button" onclick="fecharModal()" class="btn btn-sec">Cancelar</button>
-        <button type="submit" class="btn btn-pri">Confirmar revisão — hoje</button>
-      </div>
-    </form>
   </div>
 </div>
 

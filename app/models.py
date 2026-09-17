@@ -19,6 +19,7 @@ class Revisao(Base):
     doc_id = Column(Integer, ForeignKey("documentos.id"), nullable=False)
     versao = Column(String, nullable=False)  # "1.0", "1.1", "2.0"
     data = Column(Date, nullable=False)
+    hora = Column(String, nullable=True)   # "14:32"
     responsavel = Column(String, default="Michel Rui Costa")
     notas = Column(Text, nullable=True)
 
@@ -46,6 +47,12 @@ class Documento(Base):
         if not self.revisoes:
             return None
         return self.revisoes[-1].data
+
+    @property
+    def ultima_revisao_hora(self) -> str | None:
+        if not self.revisoes:
+            return None
+        return self.revisoes[-1].hora
 
     @property
     def versao_atual(self) -> str:

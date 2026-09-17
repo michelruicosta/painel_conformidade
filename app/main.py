@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
 import markdown as md_lib
@@ -10,6 +10,7 @@ from fastapi import FastAPI, Depends, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db, SessionLocal
@@ -24,6 +25,12 @@ FINDABC_DIR   = Path("D:/02_Finaud/Projetos/ativos/findabc")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE revisoes ADD COLUMN hora TEXT"))
+            conn.commit()
+    except Exception:
+        pass  # coluna já existe
     with SessionLocal() as db:
         popular_banco(db)
     yield
@@ -132,22 +139,43 @@ def abrir_arquivo(doc_id: int, db: Session = Depends(get_db)):
     return RedirectResponse("/", status_code=303)
 
 
-# ── registrar revisão ────────────────────────────────────────────────────────
+# ── editar e registrar revisão ───────────────────────────────────────────────
 
-@app.post("/revisar/{doc_id}")
-def revisar_documento(
-    doc_id: int,
-    versao: str = Form(...),
-    notas:  str = Form(""),
+@app.get("/editar/{doc_id}", response_class=HTMLResponse)
+def editar_documento(doc_id: int, request: Request, db: Session = Depends(get_db)):
+    doc = db.query(Documento).filter(Documento.id == doc_id).first()
+    if not doc:
+        return HTMLResponse("Documento não encontrado.", status_code=404)
+    tem_arquivo = bool(doc.arquivo and doc.categoria != "Certificado")
+    conteudo = (_ler_arquivo(doc.arquivo) or "") if tem_arquivo else ""
+    return templates.TemplateResponse(request, "editar.html", {
+        "request":      request,
+        "doc":          doc,
+        "conteudo":     conteudo,
+        "tem_arquivo":  tem_arquivo,
+    })
+
+
+@app.post("/editar/{doc_id}")
+def salvar_revisao(
+    doc_id:   int,
+    conteudo: str = Form(""),
+    versao:   str = Form(...),
+    notas:    str = Form(""),
+    revisor:  str = Form("Michel Rui Costa"),
     db: Session = Depends(get_db),
 ):
     doc = db.query(Documento).filter(Documento.id == doc_id).first()
     if doc:
+        if doc.arquivo and doc.categoria != "Certificado":
+            (FINDABC_DIR / doc.arquivo).write_text(conteudo, encoding="utf-8")
+        agora = datetime.now()
         db.add(Revisao(
             doc_id=doc_id,
             versao=versao,
-            data=date.today(),
-            responsavel="Michel Rui Costa",
+            data=agora.date(),
+            hora=agora.strftime("%H:%M"),
+            responsavel=revisor,
             notas=notas or "—",
         ))
         db.commit()

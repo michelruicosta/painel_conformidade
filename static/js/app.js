@@ -1,22 +1,3 @@
-/* ── Modal ── */
-function abrirModal(id, nome, versaoSugerida) {
-  document.getElementById('modal-titulo').textContent = 'Revisar: ' + nome;
-  document.getElementById('modal-versao').value = versaoSugerida || '1.0';
-  document.getElementById('modal-notas').value = '';
-  document.getElementById('modal-form').action = '/revisar/' + id;
-  document.getElementById('modal').classList.add('aberto');
-  document.getElementById('modal-versao').focus();
-}
-
-function fecharModal(e) {
-  if (e && e.target !== document.getElementById('modal')) return;
-  document.getElementById('modal').classList.remove('aberto');
-}
-
-document.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape') document.getElementById('modal').classList.remove('aberto');
-});
-
 /* ── Dashboard (só existe em dashboard.html) ── */
 if (typeof DOCS !== 'undefined') {
   let filtroAtual = 30;
@@ -61,9 +42,6 @@ if (typeof DOCS !== 'undefined') {
   function cardHTML(d) {
     var cls = urgClass(d.dias);
     var prazo = prazoStr(d.dias, d.prazo_str);
-    var btnAbrir = d.tem_arquivo
-      ? '<a href="/abrir/' + d.id + '" class="btn-ver" title="Abrir no editor">✏</a>'
-      : '';
     return '<div class="doc-card ' + cls + '">' +
       '<div class="card-cat">' + d.categoria + '</div>' +
       '<div class="card-nome">' + d.nome + '</div>' +
@@ -72,10 +50,7 @@ if (typeof DOCS !== 'undefined') {
         '<span class="card-prazo ' + cls + '">' + prazo + '</span>' +
       '</div>' +
       '<div class="card-acoes">' +
-        '<button class="btn-revisar" onclick="abrirModal(' + d.id + ',\'' +
-          d.nome.replace(/'/g, "\\'") + '\',\'' + d.proxima_versao + '\')">Revisar →</button>' +
-        btnAbrir +
-        '<a href="/ver/' + d.id + '" class="btn-ver" target="_blank">↗</a>' +
+        '<a href="/editar/' + d.id + '" class="btn-revisar">Revisar →</a>' +
       '</div>' +
     '</div>';
   }
