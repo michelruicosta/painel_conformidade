@@ -499,12 +499,19 @@ html, body {
   overflow: hidden;
 }
 
-.ed-editor {
+.ed-preview-wrap {
   display: flex;
   flex-direction: column;
   padding: 20px 16px 20px 24px;
   overflow: hidden;
   min-width: 0;
+}
+.ed-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 .ed-label {
   font-size: 11px;
@@ -512,24 +519,83 @@ html, body {
   letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 10px;
-  flex-shrink: 0;
 }
-.ed-textarea {
+.btn-abrir {
+  font-family: var(--fonte);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .1s;
+}
+.btn-abrir:hover { color: var(--text); border-color: var(--muted); }
+
+.ed-preview {
   flex: 1;
-  font-family: Consolas, 'Cascadia Code', 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.65;
-  padding: 16px;
+  overflow-y: auto;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--surface);
-  color: var(--text);
-  resize: none;
-  width: 100%;
-  overflow-y: auto;
+  padding: 24px 28px;
 }
-.ed-textarea:focus { outline: 2px solid var(--sidebar-a); outline-offset: -1px; }
+
+/* ── Prose — renderização do markdown ── */
+.prose { font-size: 14px; line-height: 1.7; color: var(--text); }
+.prose h1 { font-size: 20px; font-weight: 700; margin: 0 0 16px; }
+.prose h2 { font-size: 16px; font-weight: 600; margin: 24px 0 10px; }
+.prose h3 { font-size: 14px; font-weight: 600; margin: 20px 0 8px; }
+.prose p  { margin: 0 0 12px; }
+.prose strong { font-weight: 600; }
+.prose em     { font-style: italic; }
+.prose hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+.prose ul, .prose ol { padding-left: 20px; margin: 0 0 12px; }
+.prose li { margin: 4px 0; }
+.prose code {
+  font-family: Consolas, monospace;
+  font-size: 12px;
+  background: var(--bg);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.prose pre {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 0 0 14px;
+}
+.prose pre code { background: none; padding: 0; }
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 0 0 16px;
+  overflow-x: auto;
+  display: block;
+}
+.prose th {
+  background: var(--bg);
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  padding: 7px 10px;
+  border-bottom: 2px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.prose td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.prose tr:last-child td { border-bottom: none; }
 
 .ed-sem-arquivo {
   display: flex;
@@ -560,6 +626,15 @@ html, body {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
+.ed-versao-info {
+  font-size: 12px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+}
+.ed-versao-info strong { color: var(--text); font-weight: 600; }
 .ed-datahora {
   font-size: 13px;
   color: var(--muted);
