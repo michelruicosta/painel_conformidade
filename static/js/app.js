@@ -1,8 +1,10 @@
-function abrirModal(id, nome, notas) {
-  document.getElementById('modal-titulo').textContent = nome;
-  document.getElementById('modal-notas').value = notas || '';
+function abrirModal(id, nome, versaoSugerida) {
+  document.getElementById('modal-titulo').textContent = 'Revisar: ' + nome;
+  document.getElementById('modal-versao').value = versaoSugerida || '1.0';
+  document.getElementById('modal-notas').value = '';
   document.getElementById('modal-form').action = '/revisar/' + id;
   document.getElementById('modal').classList.add('aberto');
+  document.getElementById('modal-versao').focus();
 }
 
 function fecharModal(e) {

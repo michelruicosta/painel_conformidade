@@ -109,12 +109,11 @@ body {
 
 .doc-row {
   display: grid;
-  grid-template-columns: 90px 1fr 90px 160px 80px;
+  grid-template-columns: 90px 1fr 90px 160px 140px;
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
-  cursor: pointer;
   transition: background .12s;
 }
 .doc-row:hover { background: var(--bg); }
@@ -145,14 +144,69 @@ body {
 .status-em_dia .doc-data { color: var(--suave); }
 .status-sem_data .doc-data { color: var(--cinza); }
 
-.doc-btn {
-  font-size: 12px;
+.doc-versao {
+  font-size: 11px;
   color: var(--suave);
-  text-align: right;
-  display: block;
-  white-space: nowrap;
+  margin-left: 6px;
+  font-weight: 400;
 }
-.doc-row:hover .doc-btn { color: var(--texto); }
+
+.doc-acoes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.doc-btn-sm {
+  font-size: 13px;
+  color: var(--suave);
+  text-decoration: none;
+  padding: 3px 5px;
+  border-radius: 4px;
+  transition: background .1s;
+}
+.doc-btn-sm:hover { background: var(--border); color: var(--texto); }
+
+.doc-btn-revisar {
+  font-family: var(--fonte);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--suave);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .1s;
+}
+.doc-btn-revisar:hover { color: var(--texto); border-color: var(--texto); }
+
+.btn-pacote {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--suave);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 12px;
+  white-space: nowrap;
+  transition: all .1s;
+}
+.btn-pacote:hover { color: var(--texto); border-color: var(--texto); }
+
+.form-input {
+  font-family: var(--fonte);
+  font-size: 13px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--texto);
+  width: 100%;
+}
+.form-input:focus { outline: 2px solid var(--verde); outline-offset: -1px; }
 
 /* ── Modal ── */
 .modal-overlay {

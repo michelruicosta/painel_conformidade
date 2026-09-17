@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pacote de Documentação — Finaud Tec</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap">
+  <style>
+    :root {
+      --azul:    #1a4fa0;
+      --laranja: #e8710a;
+      --cinza:   #5a5a5a;
+      --borda:   #d0d5dd;
+      --fundo:   #f8f9fc;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: #1a1a1a;
+      background: #fff;
+    }
+
+    /* Botões de tela */
+    .acoes-tela {
+      background: var(--fundo);
+      border-bottom: 1px solid var(--borda);
+      padding: 10px 48px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1px solid var(--borda);
+      cursor: pointer;
+      text-decoration: none;
+      color: #1a1a1a;
+      background: #fff;
+    }
+    .btn-pri { background: var(--azul); color: #fff; border-color: var(--azul); }
+
+    /* Documento */
+    .pagina {
+      max-width: 820px;
+      margin: 32px auto 64px;
+      padding: 0 48px;
+    }
+
+    /* Cabeçalho */
+    .cabecalho {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding-bottom: 16px;
+      border-bottom: 3px solid var(--azul);
+      margin-bottom: 32px;
+    }
+    .cab-logo img { height: 44px; }
+    .cab-empresa {
+      text-align: right;
+      font-size: 11px;
+      color: var(--cinza);
+      line-height: 1.5;
+    }
+    .cab-empresa strong { display: block; color: #1a1a1a; font-size: 12px; }
+
+    /* Título da página */
+    .titulo-pacote {
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--azul);
+      margin-bottom: 4px;
+    }
+    .subtitulo {
+      font-size: 12px;
+      color: var(--cinza);
+      margin-bottom: 28px;
+    }
+
+    /* Tabela por categoria */
+    .categoria-bloco { margin-bottom: 28px; }
+
+    .categoria-titulo {
+      font-family: 'Inter Tight', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--azul);
+      padding: 7px 0 6px;
+      border-bottom: 2px solid var(--azul);
+      margin-bottom: 0;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+      background: var(--fundo);
+      border-bottom: 1px solid var(--borda);
+      padding: 7px 10px;
+      text-align: left;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--cinza);
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--borda);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+
+    .doc-link {
+      font-weight: 500;
+      color: var(--azul);
+      text-decoration: none;
+    }
+    .doc-link:hover { text-decoration: underline; }
+
+    .versao { font-weight: 600; }
+    .data-col { color: var(--cinza); font-size: 12px; white-space: nowrap; }
+
+    .classif-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+    }
+    .classif-confidencial { background: #fef3c7; color: #92400e; }
+    .classif-restrito     { background: #fee2e2; color: #991b1b; }
+    .classif-interno      { background: #dbeafe; color: #1e40af; }
+    .classif-publico      { background: #dcfce7; color: #166534; }
+
+    /* Rodapé */
+    .rodape {
+      margin-top: 40px;
+      border-top: 1px solid var(--borda);
+      padding-top: 12px;
+      font-size: 10px;
+      color: var(--cinza);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Nota para opção 2 */
+    .nota-futura {
+      background: var(--fundo);
+      border: 1px dashed var(--borda);
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--cinza);
+      margin-top: 28px;
+    }
+
+    @media print {
+      .acoes-tela { display: none; }
+      .pagina { margin: 0; padding: 20px 32px; max-width: none; }
+      .nota-futura { display: none; }
+      .doc-link { color: #1a1a1a; }
+      @page { margin: 15mm 20mm; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="acoes-tela">
+  <a href="/" class="btn">← Painel</a>
+  <button class="btn btn-pri" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+</div>
+
+<div class="pagina">
+
+  <div class="cabecalho">
+    <div class="cab-logo">
+      <img src="/static/img/logo_finaud.png" alt="Finaud Tec">
+    </div>
+    <div class="cab-empresa">
+      <strong>FINAUD TEC SOLUCOES COM TECNOLOGIA LTDA.</strong>
+      CNPJ 12.594.113/0001-41<br>
+      Rua Camargo, 19 — São Paulo, SP<br>
+      contato@finaud.com.br
+    </div>
+  </div>
+
+  <div class="titulo-pacote">Pacote de Documentação — Conformidade e Segurança</div>
+  <div class="subtitulo">
+    Gerado em {{ hoje.strftime('%d/%m/%Y') }} · {{ docs | length }} documentos ·
+    Uso exclusivo para fins de due diligence e auditoria
+  </div>
+
+  {% set categorias = docs | map(attribute='categoria') | list | unique | sort %}
+  {% for cat in categorias %}
+  {% set docs_cat = docs | selectattr('categoria', 'equalto', cat) | list %}
+  <div class="categoria-bloco">
+    <div class="categoria-titulo">{{ cat }}</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Documento</th>
+          <th>Versão</th>
+          <th>Data</th>
+          <th>Válido até</th>
+          <th>Classificação</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in docs_cat %}
+        <tr>
+          <td>
+            <a href="/ver/{{ d.id }}" class="doc-link" target="_blank">{{ d.nome }}</a>
+          </td>
+          <td class="versao">{{ d.versao_atual }}</td>
+          <td class="data-col">
+            {% if d.ultima_revisao %}{{ d.ultima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          </td>
+          <td class="data-col">
+            {% if d.proxima_revisao %}{{ d.proxima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
+          </td>
+          <td>
+            <span class="classif-badge classif-{{ d.classificacao | lower }}">{{ d.classificacao }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+
+  <div class="rodape">
+    <span>FINAUD TEC SOLUCOES COM TECNOLOGIA LTDA. · CNPJ 12.594.113/0001-41</span>
+    <span>Documento gerado em {{ hoje.strftime('%d/%m/%Y') }}</span>
+  </div>
+
+  <div class="nota-futura">
+    💡 <strong>Em breve:</strong> Portal do cliente — acesso online a este pacote via link exclusivo, sem troca de arquivos por e-mail.
+  </div>
+
+</div>
+</body>
+</html>
