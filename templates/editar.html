@@ -6,7 +6,8 @@
   <title>Revisar — {{ doc.nome }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=6">
+  <link rel="stylesheet" href="/static/vendor/easymde.min.css">
+  <link rel="stylesheet" href="/static/css/style.css?v=7">
 </head>
 <body class="ed-page">
 
@@ -27,29 +28,24 @@
   </div>
 </div>
 
-<div class="ed-body">
+<form method="POST" action="/editar/{{ doc.id }}" class="ed-body" id="ed-form">
 
-  <!-- ── Prévia do documento ── -->
-  <div class="ed-preview-wrap">
+  <!-- ── Editor ── -->
+  <div class="ed-editor">
     {% if tem_arquivo %}
-    <div class="ed-preview-head">
-      <span class="ed-label">Conteúdo do documento</span>
-      <button type="button" class="btn-abrir" onclick="abrirNoEditor({{ doc.id }})">
-        Abrir no editor ↗
-      </button>
-    </div>
-    <div class="ed-preview prose">{{ conteudo_html | safe }}</div>
+    <textarea id="ed-conteudo" name="conteudo">{{ conteudo }}</textarea>
     {% else %}
     <div class="ed-sem-arquivo">
       <div class="ed-sem-ico">📄</div>
       <div class="ed-sem-t">Sem arquivo vinculado</div>
       <div class="ed-sem-sub">A revisão será registrada sem edição de conteúdo.</div>
     </div>
+    <input type="hidden" name="conteudo" value="">
     {% endif %}
   </div>
 
   <!-- ── Formulário de revisão ── -->
-  <form method="POST" action="/editar/{{ doc.id }}" class="ed-aside">
+  <div class="ed-aside">
     <div class="ed-aside-titulo">Registrar revisão</div>
 
     <div class="ed-versao-info">
@@ -76,15 +72,34 @@
       <button type="submit" class="btn btn-pri">Salvar e registrar</button>
       <a href="/" class="btn btn-sec">Cancelar</a>
     </div>
-  </form>
+  </div>
 
-</div>
+</form>
 
-<script src="/static/js/app.js?v=6"></script>
+<script src="/static/vendor/easymde.min.js"></script>
+<script src="/static/js/app.js?v=7"></script>
 <script>
-  function abrirNoEditor(id) {
-    fetch('/abrir/' + id + '?ajax=1').catch(function () {});
+  var textarea = document.getElementById('ed-conteudo');
+  if (textarea) {
+    var easyMDE = new EasyMDE({
+      element: textarea,
+      spellChecker: false,
+      autosave: { enabled: false },
+      sideBySideFullscreen: false,
+      toolbar: [
+        'bold', 'italic', 'strikethrough', '|',
+        'heading-1', 'heading-2', 'heading-3', '|',
+        'unordered-list', 'ordered-list', '|',
+        'table', 'horizontal-rule', '|',
+        'preview', 'side-by-side', '|',
+        'guide'
+      ],
+      status: false,
+      tabSize: 2,
+      promptURLs: true,
+    });
   }
+
   (function () {
     var el = document.getElementById('ed-datahora');
     function tick() {

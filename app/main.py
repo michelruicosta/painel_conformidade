@@ -177,24 +177,27 @@ def editar_documento(doc_id: int, request: Request, db: Session = Depends(get_db
     if not doc:
         return HTMLResponse("Documento não encontrado.", status_code=404)
     tem_arquivo = bool(doc.arquivo and doc.categoria != "Certificado")
-    conteudo_html = _renderizar(doc.arquivo) if tem_arquivo else ""
+    conteudo = (_ler_arquivo(doc.arquivo) or "") if tem_arquivo else ""
     return templates.TemplateResponse(request, "editar.html", {
-        "request":       request,
-        "doc":           doc,
-        "tem_arquivo":   tem_arquivo,
-        "conteudo_html": conteudo_html,
+        "request":     request,
+        "doc":         doc,
+        "tem_arquivo": tem_arquivo,
+        "conteudo":    conteudo,
     })
 
 
 @app.post("/editar/{doc_id}")
 def salvar_revisao(
-    doc_id:  int,
-    notas:   str = Form(""),
-    revisor: str = Form("Michel Rui Costa"),
+    doc_id:   int,
+    conteudo: str = Form(""),
+    notas:    str = Form(""),
+    revisor:  str = Form("Michel Rui Costa"),
     db: Session = Depends(get_db),
 ):
     doc = db.query(Documento).filter(Documento.id == doc_id).first()
     if doc:
+        if doc.arquivo and doc.categoria != "Certificado":
+            (FINDABC_DIR / doc.arquivo).write_text(conteudo, encoding="utf-8")
         agora = datetime.now()
         db.add(Revisao(
             doc_id=doc_id,

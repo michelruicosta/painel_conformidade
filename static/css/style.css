@@ -500,103 +500,87 @@ html, body {
   overflow: hidden;
 }
 
-.ed-preview-wrap {
+.ed-editor {
   display: flex;
   flex-direction: column;
-  padding: 20px 16px 20px 24px;
+  padding: 16px 16px 16px 24px;
   overflow: hidden;
   min-width: 0;
 }
-.ed-preview-head {
+
+/* ── EasyMDE dentro do editor ── */
+.ed-editor .EasyMDEContainer {
+  flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+  flex-direction: column;
+  min-height: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.ed-editor .editor-toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  padding: 6px 10px;
   flex-shrink: 0;
 }
-.ed-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  color: var(--muted);
+.ed-editor .editor-toolbar button {
+  color: var(--muted) !important;
 }
-.btn-abrir {
-  font-family: var(--fonte);
-  font-size: 12px;
-  font-weight: 500;
-  padding: 5px 12px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: none;
-  color: var(--muted);
-  cursor: pointer;
-  transition: all .1s;
+.ed-editor .editor-toolbar button:hover,
+.ed-editor .editor-toolbar button.active {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--text) !important;
 }
-.btn-abrir:hover { color: var(--text); border-color: var(--muted); }
-
-.ed-preview {
+.ed-editor .editor-toolbar i.separator { border-color: var(--border); }
+.ed-editor .CodeMirror {
   flex: 1;
-  overflow-y: auto;
+  height: auto;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px 28px;
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  border: none;
+  padding: 16px 20px;
 }
+.ed-editor .CodeMirror-scroll { min-height: 200px; }
+.ed-editor .CodeMirror-cursor { border-left-color: var(--text); }
+.ed-editor .editor-preview,
+.ed-editor .editor-preview-side {
+  background: var(--surface);
+  color: var(--text);
+  padding: 20px 24px;
+  border-color: var(--border);
+}
+.ed-editor .editor-preview-side { border-left: 1px solid var(--border); }
 
-/* ── Prose — renderização do markdown ── */
-.prose { font-size: 14px; line-height: 1.7; color: var(--text); }
-.prose h1 { font-size: 20px; font-weight: 700; margin: 0 0 16px; }
-.prose h2 { font-size: 16px; font-weight: 600; margin: 24px 0 10px; }
-.prose h3 { font-size: 14px; font-weight: 600; margin: 20px 0 8px; }
-.prose p  { margin: 0 0 12px; }
-.prose strong { font-weight: 600; }
-.prose em     { font-style: italic; }
-.prose hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
-.prose ul, .prose ol { padding-left: 20px; margin: 0 0 12px; }
-.prose li { margin: 4px 0; }
-.prose code {
-  font-family: Consolas, monospace;
-  font-size: 12px;
-  background: var(--bg);
-  padding: 1px 5px;
-  border-radius: 3px;
+/* Prévia do EasyMDE — formatação */
+.ed-editor .editor-preview h1,
+.ed-editor .editor-preview-side h1 { font-size: 20px; font-weight: 700; margin: 0 0 14px; }
+.ed-editor .editor-preview h2,
+.ed-editor .editor-preview-side h2 { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
+.ed-editor .editor-preview h3,
+.ed-editor .editor-preview-side h3 { font-size: 14px; font-weight: 600; margin: 16px 0 8px; }
+.ed-editor .editor-preview table,
+.ed-editor .editor-preview-side table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 0 0 14px; }
+.ed-editor .editor-preview th,
+.ed-editor .editor-preview-side th { background: var(--bg); font-weight: 600; padding: 7px 10px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.ed-editor .editor-preview td,
+.ed-editor .editor-preview-side td { padding: 7px 10px; border: 1px solid var(--border); }
+.ed-editor .editor-preview code,
+.ed-editor .editor-preview-side code { background: var(--bg); padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+/* Dark mode para EasyMDE */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ed-editor .CodeMirror { background: var(--surface); color: var(--text); }
+  :root:not([data-theme="light"]) .ed-editor .editor-toolbar { background: var(--surface); border-color: var(--border); }
+  :root:not([data-theme="light"]) .ed-editor .EasyMDEContainer { border-color: var(--border); }
 }
-.prose pre {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 14px 16px;
-  overflow-x: auto;
-  margin: 0 0 14px;
-}
-.prose pre code { background: none; padding: 0; }
-.prose table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-  margin: 0 0 16px;
-  overflow-x: auto;
-  display: block;
-}
-.prose th {
-  background: var(--bg);
-  font-weight: 600;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  color: var(--muted);
-  padding: 7px 10px;
-  border-bottom: 2px solid var(--border);
-  text-align: left;
-  white-space: nowrap;
-}
-.prose td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.prose tr:last-child td { border-bottom: none; }
 
 .ed-sem-arquivo {
   display: flex;
