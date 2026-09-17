@@ -1,26 +1,52 @@
 import json
 import os
 import subprocess
+import threading
 from contextlib import asynccontextmanager
 from datetime import date, datetime
 from pathlib import Path
 
 import markdown as md_lib
 from fastapi import FastAPI, Depends, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db, SessionLocal
+from .excel_export import gerar_excel
 from .models import Documento, Revisao
 from .seed import popular_banco
 
-TEMPLATES_DIR   = Path(__file__).resolve().parent.parent / "templates"
-STATIC_DIR      = Path(__file__).resolve().parent.parent / "static"
-FINDABC_DIR     = Path("D:/02_Finaud/Projetos/ativos/findabc")
+TEMPLATES_DIR    = Path(__file__).resolve().parent.parent / "templates"
+STATIC_DIR       = Path(__file__).resolve().parent.parent / "static"
+FINDABC_DIR      = Path("D:/02_Finaud/Projetos/ativos/findabc")
 AUDIT_REPORT_DIR = Path(r"D:\02_Finaud\Projetos\ativos\_auditoria_seguranca\relatorios")
+AUDIT_SCRIPT     = Path(r"D:\02_Finaud\Projetos\ativos\_auditoria_seguranca\security_audit.py")
+AUDIT_PYTHON     = Path(r"D:\02_Finaud\Projetos\ativos\_auditoria_seguranca\.venv\Scripts\python.exe")
+LOGO_PATH        = STATIC_DIR / "img" / "logo_finaud.png"
+
+# ── Estado da auditoria em background ────────────────────────────────────────
+_audit_lock   = threading.Lock()
+_audit_status: dict = {"running": False, "started_at": None, "finished_at": None, "error": None}
+
+def _run_audit_bg() -> None:
+    global _audit_status
+    try:
+        subprocess.run(
+            [str(AUDIT_PYTHON), str(AUDIT_SCRIPT)],
+            capture_output=True, timeout=900,
+        )
+        with _audit_lock:
+            _audit_status["error"] = None
+    except Exception as e:
+        with _audit_lock:
+            _audit_status["error"] = str(e)
+    finally:
+        with _audit_lock:
+            _audit_status["running"]     = False
+            _audit_status["finished_at"] = datetime.now().strftime("%d/%m/%Y %H:%M")
 
 
 @asynccontextmanager
@@ -204,14 +230,58 @@ def pacote_due_diligence(request: Request, db: Session = Depends(get_db)):
 @app.get("/seguranca", response_class=HTMLResponse)
 def seguranca(request: Request):
     summary_path = AUDIT_REPORT_DIR / "latest_summary.json"
+    summary = None
     if summary_path.exists():
-        summary = json.loads(summary_path.read_text(encoding="utf-8"))
-    else:
-        summary = None
+        try:
+            summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    with _audit_lock:
+        audit_st = _audit_status.copy()
     return templates.TemplateResponse(request, "seguranca.html", {
-        "request": request,
-        "summary": summary,
+        "request":    request,
+        "summary":    summary,
+        "audit_st":   audit_st,
     })
+
+
+@app.post("/seguranca/rodar")
+def seguranca_rodar():
+    with _audit_lock:
+        if _audit_status["running"]:
+            return {"ok": False, "message": "Auditoria já em andamento"}
+        _audit_status["running"]     = True
+        _audit_status["started_at"]  = datetime.now().strftime("%d/%m/%Y %H:%M")
+        _audit_status["finished_at"] = None
+        _audit_status["error"]       = None
+    t = threading.Thread(target=_run_audit_bg, daemon=True)
+    t.start()
+    return {"ok": True, "message": "Auditoria iniciada"}
+
+
+@app.get("/seguranca/status")
+def seguranca_status():
+    with _audit_lock:
+        return _audit_status.copy()
+
+
+@app.get("/seguranca/exportar")
+def seguranca_exportar():
+    summary_path = AUDIT_REPORT_DIR / "latest_summary.json"
+    history_path = AUDIT_REPORT_DIR / "history.json"
+    if not summary_path.exists():
+        return Response("Nenhuma auditoria disponível.", status_code=404)
+    try:
+        xlsx = gerar_excel(summary_path, history_path, LOGO_PATH if LOGO_PATH.exists() else None)
+    except Exception as e:
+        return Response(f"Erro ao gerar Excel: {e}", status_code=500)
+    ts = datetime.now().strftime("%Y-%m-%d")
+    filename = f"auditoria_seguranca_{ts}.xlsx"
+    return Response(
+        content=xlsx,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 # ── /p/{token} — reservado para Opção 2 (portal do cliente, pós-deploy) ─────

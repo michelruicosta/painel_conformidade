@@ -3,56 +3,172 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Auditoria de Segurança — Finaud</title>
+  <title>Segurança — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="/static/css/style.css?v=4">
   <style>
-    .sec-grid {
+    /* ── Variáveis locais mapeadas para o CSS do projeto ── */
+    :root {
+      --accent:       #3b82f6;
+      --card:         var(--surface);
+      --hover:        rgba(0,0,0,.04);
+      --sidebar-bg:   var(--sidebar);
+      --text-muted:   var(--muted);
+      --border-strong: var(--border);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --hover: rgba(255,255,255,.04);
+      }
+    }
+    :root[data-theme="dark"] { --hover: rgba(255,255,255,.04); }
+
+    /* ── Layout base ── */
+    .sec-content { padding: 24px 28px; max-width: 1200px; }
+
+    /* ── Topbar extra ── */
+    .run-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 28px; background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    .run-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 18px; border-radius: 8px; font-size: .85rem;
+      font-weight: 500; cursor: pointer; border: none;
+      background: var(--accent); color: #fff;
+      transition: opacity .15s;
+    }
+    .run-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .run-btn.running  { background: #f59e0b; }
+    .run-btn.done     { background: #22c55e; }
+    .run-meta { font-size: .78rem; color: var(--text-muted); }
+    .run-meta strong { color: var(--text); }
+    .progress-bar { height: 3px; background: #e5e7eb; border-radius: 2px; overflow: hidden; margin-top: 4px; width: 200px; }
+    .progress-fill { height: 100%; background: var(--accent); animation: prog 2s linear infinite; }
+    @keyframes prog { from{width:0%} to{width:100%} }
+    .spinner { display:inline-block; width:14px; height:14px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Cards de KPI ── */
+    .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 14px;
-      margin-bottom: 28px;
+      grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+      gap: 12px; margin: 20px 0 28px;
     }
-    .sec-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 18px 16px 14px;
-      text-align: center;
+    .kpi-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 14px 12px;
+      position: relative;
     }
-    .sec-card .sec-num {
-      font-size: 2rem;
-      font-weight: 600;
-      line-height: 1;
+    .kpi-card .kpi-num {
+      font-size: 2rem; font-weight: 600; line-height: 1;
     }
-    .sec-card .sec-label {
-      font-size: .78rem;
-      color: var(--text-muted);
-      margin-top: 6px;
+    .kpi-card .kpi-label {
+      font-size: .77rem; color: var(--text-muted); margin-top: 5px; line-height: 1.3;
     }
-    .sec-card.ok   .sec-num { color: #22c55e; }
-    .sec-card.warn .sec-num { color: #f59e0b; }
-    .sec-card.bad  .sec-num { color: #ef4444; }
-    .sec-card.info .sec-num { color: #60a5fa; }
+    .kpi-card.ok   .kpi-num { color: #22c55e; }
+    .kpi-card.warn .kpi-num { color: #f59e0b; }
+    .kpi-card.bad  .kpi-num { color: #ef4444; }
+    .kpi-card.info .kpi-num { color: #60a5fa; }
 
-    .sec-table { width: 100%; border-collapse: collapse; font-size: .85rem; }
-    .sec-table th { text-align: left; padding: 8px 10px; background: var(--sidebar-bg);
-                    border-bottom: 1px solid var(--border); font-weight: 500; }
-    .sec-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
-    .sec-table tr:last-child td { border-bottom: none; }
-    .sec-table tr:hover td { background: var(--hover); }
-    .badge { display:inline-block; min-width:22px; padding:2px 6px;
-             border-radius:4px; font-size:.77rem; font-weight:600; text-align:center; }
-    .badge-ok   { background:#dcfce7; color:#166534; }
-    .badge-warn { background:#fef9c3; color:#854d0e; }
-    .badge-bad  { background:#fee2e2; color:#991b1b; }
-    .badge-info { background:#dbeafe; color:#1e40af; }
+    /* Tooltip ? */
+    .tt-wrap { display:inline-block; position:relative; }
+    .tt-icon {
+      display:inline-flex; align-items:center; justify-content:center;
+      width:15px; height:15px; border-radius:50%; border:1px solid var(--border-strong);
+      font-size:9px; font-weight:600; color: var(--text-muted);
+      cursor: pointer; vertical-align: middle; margin-left:5px; user-select:none;
+    }
+    .tt-box {
+      display:none; position:absolute; bottom: calc(100% + 6px); left:50%;
+      transform:translateX(-50%);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 13px; width: 240px;
+      font-size: .78rem; line-height: 1.5; color: var(--text-muted);
+      z-index: 100; pointer-events:none;
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+    .tt-box strong { color: var(--text); }
+    .tt-wrap:hover .tt-box,
+    .tt-wrap.open  .tt-box { display:block; }
 
-    .sec-meta { font-size:.82rem; color:var(--text-muted); margin-bottom:18px; }
-    .sec-link { color: var(--accent); text-decoration: none; font-size:.85rem; }
-    .sec-link:hover { text-decoration: underline; }
-    .no-audit { padding: 40px; text-align:center; color:var(--text-muted); font-size:.9rem; }
+    /* ── Seção título ── */
+    .sec-title {
+      font-size: .78rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: .06em; color: var(--text-muted); margin: 24px 0 10px;
+    }
+
+    /* ── Filtros ── */
+    .filter-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+    .filter-chip {
+      padding: 4px 12px; border-radius: 20px; font-size: .78rem; cursor: pointer;
+      border: 1px solid var(--border-strong); color: var(--text-muted);
+      background: var(--card); transition: all .15s;
+    }
+    .filter-chip.active {
+      background: var(--accent); color: #fff; border-color: var(--accent);
+    }
+    .filter-sep { width:1px; height:18px; background:var(--border); margin:0 4px; }
+    .filter-input {
+      padding: 4px 10px; border-radius: 8px; font-size:.78rem;
+      border: 1px solid var(--border-strong); background: var(--card);
+      color: var(--text); outline:none; width:180px;
+    }
+    .filter-input:focus { border-color: var(--accent); }
+
+    /* ── Tabela de achados ── */
+    .findings-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .findings-table th {
+      text-align:left; padding:9px 10px; background:var(--sidebar-bg);
+      border-bottom: 2px solid var(--border); font-weight:600;
+      white-space:nowrap; position:sticky; top:0; z-index:1;
+    }
+    .findings-table td { padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:top; }
+    .findings-table tr:last-child td { border-bottom:none; }
+    .findings-table tr:hover td { background:var(--hover); }
+    .findings-table td.cell-main { font-weight:500; }
+
+    .badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:.72rem; font-weight:600; white-space:nowrap; }
+    .b-ok    { background:#dcfce7; color:#166534; }
+    .b-warn  { background:#fef9c3; color:#854d0e; }
+    .b-bad   { background:#fee2e2; color:#991b1b; }
+    .b-info  { background:#dbeafe; color:#1e40af; }
+    .b-disk  { background:#fef3c7; color:#92400e; }
+
+    /* ── Tabela por projeto ── */
+    .proj-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .proj-table th { text-align:left; padding:8px 10px; background:var(--sidebar-bg);
+                     border-bottom:2px solid var(--border); font-weight:600; }
+    .proj-table td { padding:8px 10px; border-bottom:1px solid var(--border); }
+    .proj-table tr:last-child td { border-bottom:none; }
+    .proj-table tr:hover td { background:var(--hover); }
+    .proj-desc { font-size:.75rem; color:var(--text-muted); }
+
+    /* ── Export ── */
+    .export-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      padding:7px 15px; border-radius:8px; font-size:.82rem; font-weight:500;
+      border:1px solid var(--border-strong); background:var(--card); color:var(--text);
+      cursor:pointer; text-decoration:none; transition:background .15s;
+    }
+    .export-btn:hover { background:var(--hover); }
+
+    /* ── Empty state ── */
+    .empty-state { padding:48px 20px; text-align:center; color:var(--text-muted); }
+    .empty-state h3 { font-size:1rem; font-weight:500; margin-bottom:8px; color:var(--text); }
+    .empty-state p  { font-size:.85rem; }
+
+    /* ── No achados ── */
+    .no-row td { color:var(--text-muted); font-style:italic; text-align:center; padding:24px; }
+
+    /* ── Meta linha ── */
+    .audit-meta { display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:4px; }
+    .audit-meta .meta-item { font-size:.8rem; color:var(--text-muted); }
+    .audit-meta .meta-item strong { color:var(--text); }
+    .audit-meta a { color:var(--accent); text-decoration:none; font-size:.8rem; }
+    .audit-meta a:hover { text-decoration:underline; }
   </style>
 </head>
 <body>
@@ -62,24 +178,20 @@
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;opacity:.9;">
+      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;width:auto;display:block;opacity:.9;">
       <div class="brand-sub">Painel de Conformidade</div>
     </div>
-
     <nav class="sidebar-nav">
       <div class="nav-label">Visão geral</div>
       <a href="/" class="nav-item" style="text-decoration:none">
         <span class="nav-icon">◉</span> Dashboard
       </a>
-
       <div class="nav-label">Relatórios</div>
       <a href="/pacote" class="nav-item" style="text-decoration:none">
-        <span class="nav-icon">📋</span>
-        <span class="nav-nome">Auditoria</span>
+        <span class="nav-icon">📋</span><span class="nav-nome">Auditoria</span>
       </a>
       <a href="/seguranca" class="nav-item active" style="text-decoration:none">
-        <span class="nav-icon">🔒</span>
-        <span class="nav-nome">Segurança</span>
+        <span class="nav-icon">🔒</span><span class="nav-nome">Segurança</span>
       </a>
     </nav>
   </aside>
@@ -90,98 +202,349 @@
       <span class="topbar-title">Segurança dos Projetos</span>
     </div>
 
-    <div class="content" style="padding: 24px;">
+    <!-- Barra de execução -->
+    <div class="run-bar">
+      <button class="run-btn" id="runBtn" onclick="rodarAuditoria()">
+        ▶ Rodar auditoria agora
+      </button>
+      <div id="runMeta" class="run-meta">
+        {% if summary %}
+          <strong>Último resultado:</strong> {{ summary.generated_at }}
+          &nbsp;·&nbsp; <a href="/relatorios/{{ summary.report_file }}" target="_blank">Ver relatório completo →</a>
+        {% else %}
+          Nenhuma auditoria encontrada ainda.
+        {% endif %}
+      </div>
+      <div style="margin-left:auto">
+        <a class="export-btn" href="/seguranca/exportar" {% if not summary %}style="opacity:.4;pointer-events:none"{% endif %}>
+          ⬇ Exportar Excel
+        </a>
+      </div>
+    </div>
+
+    <div class="sec-content">
 
       {% if summary %}
 
-        <p class="sec-meta">
-          Última auditoria: <strong>{{ summary.generated_at }}</strong>
-          &nbsp;·&nbsp;
-          <a class="sec-link" href="/relatorios/{{ summary.report_file }}" target="_blank">
-            Ver relatório completo →
-          </a>
-        </p>
+      <!-- ── KPIs ── -->
+      <div class="kpi-grid">
 
-        <!-- Cards de resumo -->
-        <div class="sec-grid">
-          <div class="sec-card {% if summary.total_cves == 0 %}ok{% elif summary.total_cves <= 3 %}warn{% else %}bad{% endif %}">
-            <div class="sec-num">{{ summary.total_cves }}</div>
-            <div class="sec-label">Vulnerabilidades<br>(CVEs)</div>
+        <!-- CVEs -->
+        <div class="kpi-card {% if summary.total_cves == 0 %}ok{% elif summary.total_cves <= 3 %}warn{% else %}bad{% endif %}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.total_cves }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>CVE — falha em biblioteca</strong><br>
+                Uma das bibliotecas usadas pelo projeto tem um buraco de segurança já documentado publicamente. Pode ser explorada por atacantes para acessar dados ou comprometer o sistema.<br><br>
+                Se zero: todas as dependências estão seguras.
+              </div>
+            </div>
           </div>
-          <div class="sec-card {% if summary.total_sast == 0 %}ok{% elif summary.total_sast <= 5 %}warn{% else %}bad{% endif %}">
-            <div class="sec-num">{{ summary.total_sast }}</div>
-            <div class="sec-label">Problemas<br>de código (SAST)</div>
-          </div>
-          <div class="sec-card {% if summary.secrets_git == 0 %}ok{% else %}bad{% endif %}">
-            <div class="sec-num">{{ summary.secrets_git }}</div>
-            <div class="sec-label">Segredos no git<br>(urgente)</div>
-          </div>
-          <div class="sec-card {% if summary.secrets_disk == 0 %}ok{% else %}warn{% endif %}">
-            <div class="sec-num">{{ summary.secrets_disk }}</div>
-            <div class="sec-label">Segredos só<br>no disco</div>
-          </div>
-          <div class="sec-card {% if summary.total_licenses == 0 %}ok{% else %}warn{% endif %}">
-            <div class="sec-num">{{ summary.total_licenses }}</div>
-            <div class="sec-label">Licenças<br>problemáticas</div>
-          </div>
-          <div class="sec-card info">
-            <div class="sec-num">{{ summary.total_suprimidos }}</div>
-            <div class="sec-label">Suprimidos c/<br># nosec</div>
-          </div>
-          <div class="sec-card ok">
-            <div class="sec-num">{{ summary.clean_projects }}/{{ summary.total_projects }}</div>
-            <div class="sec-label">Projetos<br>completamente limpos</div>
-          </div>
+          <div class="kpi-label">Falhas em<br>bibliotecas (CVEs)</div>
         </div>
 
-        <!-- Tabela por projeto -->
-        <h3 style="font-size:.9rem; font-weight:600; margin-bottom:10px; color:var(--text)">Por projeto</h3>
-        <table class="sec-table">
+        <!-- SAST -->
+        <div class="kpi-card {% if summary.total_sast == 0 %}ok{% elif summary.total_sast <= 5 %}warn{% else %}bad{% endif %}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.total_sast }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>SAST — análise do código</strong><br>
+                O código-fonte foi analisado automaticamente em busca de padrões de risco: senhas escritas diretamente no código, uso inseguro de funções, brechas em consultas SQL, etc.<br><br>
+                Se zero: nenhum risco ativo detectado no código.
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Problemas no<br>código (SAST)</div>
+        </div>
+
+        <!-- Segredos git -->
+        <div class="kpi-card {% if summary.secrets_git == 0 %}ok{% else %}bad{% endif %}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.secrets_git }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>Segredo no repositório — urgente</strong><br>
+                Uma senha, chave ou token foi salvo no histórico do git. Mesmo que o arquivo seja deletado hoje, a credencial continua visível no histórico para qualquer pessoa com acesso ao repositório — inclusive no GitHub.<br><br>
+                <strong style="color:#ef4444">Se diferente de zero: ação imediata necessária.</strong>
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Segredos no git<br><span style="color:#ef4444;font-size:.7rem">⚠ urgente se &gt; 0</span></div>
+        </div>
+
+        <!-- Segredos disco -->
+        <div class="kpi-card {% if summary.secrets_disk == 0 %}ok{% else %}warn{% endif %}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.secrets_disk }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>Segredo no disco — comportamento normal</strong><br>
+                Um arquivo com senha ou chave existe localmente (ex: .env, config.local.json) mas <em>não está no repositório git</em>. Isso é o comportamento esperado — o arquivo fica só na máquina, nunca vai para o GitHub.<br><br>
+                Monitorar para confirmar que o .gitignore está protegendo esses arquivos.
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Segredos só<br>no disco</div>
+        </div>
+
+        <!-- Licenças -->
+        <div class="kpi-card {% if summary.total_licenses == 0 %}ok{% else %}warn{% endif %}">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.total_licenses }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>Licença restritiva</strong><br>
+                Alguma biblioteca usada tem uma licença (GPL, AGPL) que pode exigir que o código do produto seja tornado público — o que seria incompatível com uso comercial.<br><br>
+                Se diferente de zero: consultar o departamento jurídico.
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Licenças<br>problemáticas</div>
+        </div>
+
+        <!-- nosec -->
+        <div class="kpi-card info">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.total_suprimidos }}</div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>Suprimidos com # nosec</strong><br>
+                São trechos de código onde o sistema identificou um possível risco, mas um desenvolvedor revisou e documentou por que não é um problema real naquele contexto (falso positivo).<br><br>
+                Todos têm o motivo escrito diretamente no código — aparecem no relatório completo.
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Falsos positivos<br>documentados</div>
+        </div>
+
+        <!-- Projetos limpos -->
+        <div class="kpi-card ok">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between">
+            <div class="kpi-num">{{ summary.clean_projects }}<span style="font-size:1rem;font-weight:400;color:var(--text-muted)">/{{ summary.total_projects }}</span></div>
+            <div class="tt-wrap" onclick="this.classList.toggle('open')">
+              <span class="tt-icon">?</span>
+              <div class="tt-box">
+                <strong>Projetos completamente limpos</strong><br>
+                Projetos que não têm nenhum achado ativo: sem CVEs, sem problemas no código, sem segredos no repositório e sem licenças problemáticas.
+              </div>
+            </div>
+          </div>
+          <div class="kpi-label">Projetos<br>completamente limpos</div>
+        </div>
+
+      </div><!-- /kpi-grid -->
+
+      <!-- ── Achados detalhados ── -->
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+        <div class="sec-title" style="margin:0">Achados detalhados</div>
+        <div class="filter-row" style="margin:0">
+          <input class="filter-input" type="text" id="searchInput" placeholder="Buscar projeto ou achado…" oninput="applyFilters()">
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <button class="filter-chip active" data-type="all"    onclick="setType('all',this)">Todos</button>
+        <button class="filter-chip"        data-type="secret_git"  onclick="setType('secret_git',this)">Segredo no git</button>
+        <button class="filter-chip"        data-type="secret_disk" onclick="setType('secret_disk',this)">Segredo no disco</button>
+        <button class="filter-chip"        data-type="cve"    onclick="setType('cve',this)">CVEs</button>
+        <button class="filter-chip"        data-type="sast"   onclick="setType('sast',this)">Código (SAST)</button>
+        <button class="filter-chip"        data-type="license" onclick="setType('license',this)">Licenças</button>
+        <div class="filter-sep"></div>
+        <button class="filter-chip active" data-sev="all"     onclick="setSev('all',this)">Qualquer gravidade</button>
+        <button class="filter-chip"        data-sev="alto"    onclick="setSev('alto',this)">Alto</button>
+        <button class="filter-chip"        data-sev="médio"   onclick="setSev('médio',this)">Médio</button>
+      </div>
+
+      {% set findings = summary.get("findings", []) %}
+      {% set findings_sorted = findings | sort(attribute='severity') %}
+
+      <div style="overflow-x:auto">
+        <table class="findings-table" id="findingsTable">
           <thead>
             <tr>
               <th>Projeto</th>
+              <th>Tipo</th>
+              <th>Gravidade</th>
+              <th>O que foi encontrado</th>
+              <th>O que significa</th>
+              <th>O que fazer</th>
+              <th>Arquivo</th>
+            </tr>
+          </thead>
+          <tbody id="findingsBody">
+            {% if findings %}
+              {% for f in findings | sort(attribute='severity') %}
+              <tr data-type="{{ f.type }}" data-sev="{{ f.severity | lower }}" data-text="{{ (f.project + ' ' + f.title + ' ' + f.file) | lower }}">
+                <td class="cell-main">{{ f.project }}</td>
+                <td>
+                  {% if f.type == 'secret_git' %}<span class="badge b-bad">Segredo no git</span>
+                  {% elif f.type == 'secret_disk' %}<span class="badge b-disk">Segredo no disco</span>
+                  {% elif f.type == 'cve' %}<span class="badge b-bad">CVE — Biblioteca</span>
+                  {% elif f.type == 'sast' %}<span class="badge b-warn">Código (SAST)</span>
+                  {% elif f.type == 'license' %}<span class="badge b-warn">Licença</span>
+                  {% else %}<span class="badge b-info">{{ f.type }}</span>{% endif %}
+                </td>
+                <td>
+                  {% if f.severity | lower in ['alto', 'high'] %}<span class="badge b-bad">Alto</span>
+                  {% elif f.severity | lower in ['médio', 'medio', 'medium'] %}<span class="badge b-warn">Médio</span>
+                  {% else %}<span class="badge b-ok">Baixo</span>{% endif %}
+                </td>
+                <td style="max-width:240px">{{ f.title }}</td>
+                <td style="max-width:280px;font-size:.78rem;color:var(--text-muted)">{{ f.meaning }}</td>
+                <td style="max-width:220px;font-size:.78rem">{{ f.action }}</td>
+                <td style="max-width:160px;font-size:.74rem;color:var(--text-muted);word-break:break-all">{{ f.file or f.detail or '—' }}</td>
+              </tr>
+              {% endfor %}
+            {% else %}
+              <tr class="no-row"><td colspan="7">Nenhum achado ativo — todos os projetos estão limpos!</td></tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+
+      <div id="noResultsMsg" style="display:none;padding:24px;text-align:center;color:var(--text-muted);font-size:.85rem">
+        Nenhum achado encontrado para esse filtro.
+      </div>
+
+      <!-- ── Por projeto ── -->
+      <div class="sec-title" style="margin-top:36px">Por projeto</div>
+      <div style="overflow-x:auto">
+        <table class="proj-table">
+          <thead>
+            <tr>
+              <th>Projeto</th>
+              <th>O que é</th>
               <th style="text-align:center">CVEs</th>
               <th style="text-align:center">SAST</th>
-              <th style="text-align:center">Segredos (git)</th>
-              <th style="text-align:center">Segredos (disco)</th>
+              <th style="text-align:center">Segredo git</th>
+              <th style="text-align:center">Segredo disco</th>
               <th style="text-align:center">Licenças</th>
             </tr>
           </thead>
           <tbody>
             {% for p in summary.projects %}
-            {% set total_p = p.cves + p.sast + p.secrets_git + p.secrets_disk + p.licenses %}
             <tr>
-              <td>{{ p.name }}</td>
-              <td style="text-align:center">
-                <span class="badge {% if p.cves == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.cves }}</span>
-              </td>
-              <td style="text-align:center">
-                <span class="badge {% if p.sast == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.sast }}</span>
-              </td>
-              <td style="text-align:center">
-                <span class="badge {% if p.secrets_git == 0 %}badge-ok{% else %}badge-bad{% endif %}">{{ p.secrets_git }}</span>
-              </td>
-              <td style="text-align:center">
-                <span class="badge {% if p.secrets_disk == 0 %}badge-ok{% else %}badge-warn{% endif %}">{{ p.secrets_disk }}</span>
-              </td>
-              <td style="text-align:center">
-                <span class="badge {% if p.licenses == 0 %}badge-ok{% else %}badge-warn{% endif %}">{{ p.licenses }}</span>
-              </td>
+              <td class="cell-main">{{ p.name }}</td>
+              <td class="proj-desc">{{ p.get("description", "") }}</td>
+              <td style="text-align:center"><span class="badge {% if p.cves == 0 %}b-ok{% else %}b-bad{% endif %}">{{ p.cves }}</span></td>
+              <td style="text-align:center"><span class="badge {% if p.sast == 0 %}b-ok{% else %}b-bad{% endif %}">{{ p.sast }}</span></td>
+              <td style="text-align:center"><span class="badge {% if p.secrets_git == 0 %}b-ok{% else %}b-bad{% endif %}">{{ p.secrets_git }}</span></td>
+              <td style="text-align:center"><span class="badge {% if p.secrets_disk == 0 %}b-ok{% else %}b-disk{% endif %}">{{ p.secrets_disk }}</span></td>
+              <td style="text-align:center"><span class="badge {% if p.licenses == 0 %}b-ok{% else %}b-warn{% endif %}">{{ p.licenses }}</span></td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
+      </div>
 
       {% else %}
-        <div class="no-audit">
-          <p>Nenhuma auditoria encontrada.</p>
-          <p style="margin-top:8px">Execute <code>security_audit.py</code> para gerar o primeiro relatório.</p>
+        <div class="empty-state">
+          <h3>Nenhuma auditoria encontrada</h3>
+          <p>Clique em <strong>Rodar auditoria agora</strong> acima para fazer a primeira análise.<br>
+          O processo leva entre 5 e 10 minutos e você pode acompanhar o andamento aqui.</p>
         </div>
       {% endif %}
 
-    </div>
-  </div>
-</div>
+    </div><!-- /sec-content -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+// ── Estado dos filtros ────────────────────────────────────────────────────────
+let activeType = 'all';
+let activeSev  = 'all';
+
+function setType(type, btn) {
+  activeType = type;
+  document.querySelectorAll('[data-type]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+function setSev(sev, btn) {
+  activeSev = sev;
+  document.querySelectorAll('[data-sev]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  applyFilters();
+}
+function applyFilters() {
+  const q    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const rows = document.querySelectorAll('#findingsBody tr[data-type]');
+  let visible = 0;
+  rows.forEach(row => {
+    const typeOk = activeType === 'all' || row.dataset.type === activeType;
+    const sevOk  = activeSev  === 'all' || row.dataset.sev  === activeSev;
+    const textOk = !q || row.dataset.text.includes(q);
+    const show   = typeOk && sevOk && textOk;
+    row.style.display = show ? '' : 'none';
+    if (show) visible++;
+  });
+  document.getElementById('noResultsMsg').style.display = visible === 0 ? 'block' : 'none';
+}
+
+// ── Botão Rodar ───────────────────────────────────────────────────────────────
+let polling = false;
+
+function rodarAuditoria() {
+  fetch('/seguranca/rodar', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) { updateBtn({running:true}); startPolling(); }
+      else         { alert(data.message); }
+    });
+}
+
+function updateBtn(st) {
+  const btn  = document.getElementById('runBtn');
+  const meta = document.getElementById('runMeta');
+  if (st.running) {
+    btn.disabled  = true;
+    btn.className = 'run-btn running';
+    btn.innerHTML = '<span class="spinner"></span> Analisando os projetos… (5–10 min)';
+    meta.innerHTML = 'Aguarde — a auditoria está rodando em segundo plano. Você pode fechar e voltar depois.';
+  } else if (st.error) {
+    btn.disabled  = false;
+    btn.className = 'run-btn';
+    btn.innerHTML = '▶ Rodar auditoria agora';
+    meta.innerHTML = '<span style="color:#ef4444">Erro: ' + st.error + '</span>';
+  } else if (st.finished_at) {
+    btn.disabled  = false;
+    btn.className = 'run-btn done';
+    btn.innerHTML = '✓ Concluída';
+    setTimeout(() => {
+      btn.className = 'run-btn';
+      btn.innerHTML = '▶ Rodar auditoria agora';
+      window.location.reload();
+    }, 3000);
+  }
+}
+
+function startPolling() {
+  if (polling) return;
+  polling = true;
+  const iv = setInterval(() => {
+    fetch('/seguranca/status').then(r=>r.json()).then(st => {
+      if (!st.running) {
+        clearInterval(iv);
+        polling = false;
+        updateBtn(st);
+      }
+    });
+  }, 5000);
+}
+
+// Verificar ao carregar se auditoria já está rodando
+fetch('/seguranca/status').then(r=>r.json()).then(st => {
+  if (st.running) { updateBtn(st); startPolling(); }
+});
+</script>
 
 </body>
 </html>
