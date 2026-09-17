@@ -3,252 +3,226 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pacote de Documentação — Finaud Tec</title>
+  <title>Auditoria — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/css/style.css?v=4">
   <style>
-    :root {
-      --azul:    #1a4fa0;
-      --laranja: #e8710a;
-      --cinza:   #5a5a5a;
-      --borda:   #d0d5dd;
-      --fundo:   #f8f9fc;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      color: #1a1a1a;
-      background: #fff;
-    }
-
-    /* Botões de tela */
-    .acoes-tela {
-      background: var(--fundo);
-      border-bottom: 1px solid var(--borda);
-      padding: 10px 48px;
+    /* Tabs de categoria */
+    .tab-nav {
       display: flex;
-      gap: 12px;
-      align-items: center;
+      align-items: flex-end;
+      gap: 2px;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+      overflow-x: auto;
     }
-    .btn {
-      font-family: 'Inter', sans-serif;
+    .tab-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      font-family: var(--fonte);
       font-size: 13px;
       font-weight: 500;
-      padding: 7px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--borda);
+      padding: 12px 16px;
+      border: none;
+      background: none;
+      color: var(--muted);
       cursor: pointer;
-      text-decoration: none;
-      color: #1a1a1a;
-      background: #fff;
-    }
-    .btn-pri { background: var(--azul); color: #fff; border-color: var(--azul); }
-
-    /* Documento */
-    .pagina {
-      max-width: 820px;
-      margin: 32px auto 64px;
-      padding: 0 48px;
-    }
-
-    /* Cabeçalho */
-    .cabecalho {
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color .12s;
+      position: relative;
+      top: 1px;
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding-bottom: 16px;
-      border-bottom: 3px solid var(--azul);
-      margin-bottom: 32px;
+      align-items: center;
+      gap: 7px;
     }
-    .cab-logo img { height: 44px; }
-    .cab-empresa {
-      text-align: right;
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--sidebar-a); border-bottom-color: var(--sidebar-a); font-weight: 600; }
+
+    .tab-count {
       font-size: 11px;
-      color: var(--cinza);
-      line-height: 1.5;
+      background: rgba(0,0,0,.07);
+      border-radius: 10px;
+      padding: 0 6px;
+      line-height: 18px;
+      font-variant-numeric: tabular-nums;
     }
-    .cab-empresa strong { display: block; color: #1a1a1a; font-size: 12px; }
+    .tab-btn.active .tab-count { background: rgba(59,130,246,.15); color: var(--sidebar-a); }
 
-    /* Título da página */
-    .titulo-pacote {
-      font-family: 'Inter Tight', sans-serif;
-      font-size: 22px;
-      font-weight: 800;
-      color: var(--azul);
-      margin-bottom: 4px;
-    }
-    .subtitulo {
-      font-size: 12px;
-      color: var(--cinza);
-      margin-bottom: 28px;
-    }
+    /* Painéis */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
 
-    /* Tabela por categoria */
-    .categoria-bloco { margin-bottom: 28px; }
-
-    .categoria-titulo {
-      font-family: 'Inter Tight', sans-serif;
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--azul);
-      padding: 7px 0 6px;
-      border-bottom: 2px solid var(--azul);
-      margin-bottom: 0;
+    /* Tabela */
+    .audit-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
     }
 
-    table { width: 100%; border-collapse: collapse; }
-
-    th {
-      background: var(--fundo);
-      border-bottom: 1px solid var(--borda);
-      padding: 7px 10px;
+    .audit-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .audit-table th {
       text-align: left;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--border);
       font-size: 10px;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: .05em;
-      color: var(--cinza);
+      letter-spacing: .06em;
+      color: var(--muted);
+      background: var(--bg);
     }
-
-    td {
-      padding: 8px 10px;
-      border-bottom: 1px solid var(--borda);
-      vertical-align: top;
+    .audit-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
     }
-    tr:last-child td { border-bottom: none; }
+    .audit-table tr:last-child td { border-bottom: none; }
+    .audit-table tr:hover td { background: var(--bg); }
 
-    .doc-link {
-      font-weight: 500;
-      color: var(--azul);
-      text-decoration: none;
-    }
-    .doc-link:hover { text-decoration: underline; }
-
-    .versao { font-weight: 600; }
-    .data-col { color: var(--cinza); font-size: 12px; white-space: nowrap; }
+    .doc-nome { font-weight: 500; color: var(--sidebar-a); text-decoration: none; }
+    .doc-nome:hover { text-decoration: underline; }
+    .doc-versao { font-weight: 600; font-variant-numeric: tabular-nums; }
+    .doc-data   { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
 
     .classif-badge {
       display: inline-block;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
-      padding: 2px 7px;
+      padding: 3px 9px;
       border-radius: 99px;
+      white-space: nowrap;
     }
     .classif-confidencial { background: #fef3c7; color: #92400e; }
     .classif-restrito     { background: #fee2e2; color: #991b1b; }
     .classif-interno      { background: #dbeafe; color: #1e40af; }
     .classif-publico      { background: #dcfce7; color: #166534; }
 
-    /* Rodapé */
-    .rodape {
-      margin-top: 40px;
-      border-top: 1px solid var(--borda);
-      padding-top: 12px;
-      font-size: 10px;
-      color: var(--cinza);
-      display: flex;
-      justify-content: space-between;
-    }
-
-    /* Nota para opção 2 */
-    .nota-futura {
-      background: var(--fundo);
-      border: 1px dashed var(--borda);
-      border-radius: 6px;
-      padding: 12px 16px;
-      font-size: 12px;
-      color: var(--cinza);
-      margin-top: 28px;
-    }
-
+    /* Print — mostra todas as categorias como seções */
     @media print {
-      .acoes-tela { display: none; }
-      .pagina { margin: 0; padding: 20px 32px; max-width: none; }
-      .nota-futura { display: none; }
-      .doc-link { color: #1a1a1a; }
-      @page { margin: 15mm 20mm; }
+      .sidebar, .topbar, .tab-nav { display: none !important; }
+      .main { display: block !important; }
+      .content { overflow: visible !important; padding: 0 !important; gap: 0 !important; }
+      .tab-panel { display: block !important; margin-bottom: 28px; }
+      .audit-wrap { border: none; border-radius: 0; }
+      .print-cat-titulo {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: #1a4fa0;
+        padding: 8px 0 6px;
+        border-bottom: 2px solid #1a4fa0;
+        margin-bottom: 0;
+      }
     }
+    .print-cat-titulo { display: none; }
+    @media print { .print-cat-titulo { display: block; } }
   </style>
 </head>
 <body>
 
-<div class="acoes-tela">
-  <a href="/" class="btn">← Painel</a>
-  <button class="btn btn-pri" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;width:auto;opacity:.9;display:block;">
+      <div class="brand-sub">Painel de Conformidade</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Visão geral</div>
+      <a href="/" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">◉</span> Dashboard
+      </a>
+
+      <div class="nav-label">Relatórios</div>
+      <a href="/pacote" class="nav-item active" style="text-decoration:none">
+        <span class="nav-icon">📋</span>
+        <span class="nav-nome">Auditoria</span>
+      </a>
+      <a href="/seguranca" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">🔒</span>
+        <span class="nav-nome">Segurança</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ── Main ── -->
+  <div class="main">
+
+    <div class="topbar">
+      <span class="topbar-title">Auditoria de Documentação</span>
+      <span class="topbar-sep"></span>
+      <span style="font-size:12px;color:var(--muted);">{{ docs | length }} documentos · {{ hoje.strftime('%d/%m/%Y') }}</span>
+      <button class="btn-acao" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
+    </div>
+
+    <!-- Abas por categoria -->
+    {% set categorias = docs | map(attribute='categoria') | list | unique | sort %}
+    <div class="tab-nav" id="tab-nav">
+      {% for cat in categorias %}
+      {% set docs_cat = docs | selectattr('categoria', 'equalto', cat) | list %}
+      <button class="tab-btn {% if loop.first %}active{% endif %}"
+              onclick="switchTab(this, 'panel-{{ loop.index }}')">
+        {{ cat }}
+        <span class="tab-count">{{ docs_cat | length }}</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    <!-- Conteúdo -->
+    <div class="content">
+      {% for cat in categorias %}
+      {% set docs_cat = docs | selectattr('categoria', 'equalto', cat) | list %}
+      <div class="tab-panel {% if loop.first %}active{% endif %}" id="panel-{{ loop.index }}">
+        <div class="print-cat-titulo">{{ cat }}</div>
+        <div class="audit-wrap">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Documento</th>
+                <th>Versão</th>
+                <th>Data</th>
+                <th>Válido até</th>
+                <th>Classificação</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for d in docs_cat %}
+              <tr>
+                <td><a href="/ver/{{ d.id }}" class="doc-nome">{{ d.nome }}</a></td>
+                <td class="doc-versao">{{ d.versao_atual }}</td>
+                <td class="doc-data">{% if d.ultima_revisao %}{{ d.ultima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+                <td class="doc-data">{% if d.proxima_revisao %}{{ d.proxima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}</td>
+                <td>
+                  <span class="classif-badge classif-{{ d.classificacao | lower }}">{{ d.classificacao }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
 </div>
 
-<div class="pagina">
+<script>
+function switchTab(btn, panelId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(panelId).classList.add('active');
+}
+</script>
 
-  <div class="cabecalho">
-    <div class="cab-logo">
-      <img src="/static/img/logo_finaud.png" alt="Finaud Tec">
-    </div>
-    <div class="cab-empresa">
-      <strong>FINAUD TEC SOLUCOES COM TECNOLOGIA LTDA.</strong>
-      CNPJ 12.594.113/0001-41<br>
-      Rua Camargo, 19 — São Paulo, SP<br>
-      contato@finaud.com.br
-    </div>
-  </div>
-
-  <div class="titulo-pacote">Pacote de Documentação — Conformidade e Segurança</div>
-  <div class="subtitulo">
-    Gerado em {{ hoje.strftime('%d/%m/%Y') }} · {{ docs | length }} documentos ·
-    Uso exclusivo para fins de due diligence e auditoria
-  </div>
-
-  {% set categorias = docs | map(attribute='categoria') | list | unique | sort %}
-  {% for cat in categorias %}
-  {% set docs_cat = docs | selectattr('categoria', 'equalto', cat) | list %}
-  <div class="categoria-bloco">
-    <div class="categoria-titulo">{{ cat }}</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Documento</th>
-          <th>Versão</th>
-          <th>Data</th>
-          <th>Válido até</th>
-          <th>Classificação</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for d in docs_cat %}
-        <tr>
-          <td>
-            <a href="/ver/{{ d.id }}" class="doc-link" target="_blank">{{ d.nome }}</a>
-          </td>
-          <td class="versao">{{ d.versao_atual }}</td>
-          <td class="data-col">
-            {% if d.ultima_revisao %}{{ d.ultima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
-          </td>
-          <td class="data-col">
-            {% if d.proxima_revisao %}{{ d.proxima_revisao.strftime('%d/%m/%Y') }}{% else %}—{% endif %}
-          </td>
-          <td>
-            <span class="classif-badge classif-{{ d.classificacao | lower }}">{{ d.classificacao }}</span>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-  {% endfor %}
-
-  <div class="rodape">
-    <span>FINAUD TEC SOLUCOES COM TECNOLOGIA LTDA. · CNPJ 12.594.113/0001-41</span>
-    <span>Documento gerado em {{ hoje.strftime('%d/%m/%Y') }}</span>
-  </div>
-
-  <div class="nota-futura">
-    💡 <strong>Em breve:</strong> Portal do cliente — acesso online a este pacote via link exclusivo, sem troca de arquivos por e-mail.
-  </div>
-
-</div>
 </body>
 </html>
