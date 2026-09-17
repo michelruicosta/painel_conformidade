@@ -24,9 +24,12 @@
     }
     :root[data-theme="dark"] { --hover: rgba(255,255,255,.04); }
 
-    /* ── Layout base: habilita scroll dentro do .main ── */
-    .main { overflow: hidden !important; }
-    .main-body { flex: 1; overflow-y: auto; }
+    /* ── Layout base: scroll nativo do navegador ── */
+    html, body { height: auto !important; }
+    .layout    { height: auto !important; overflow: visible !important; min-height: 100vh; }
+    .sidebar   { position: sticky; top: 0; height: 100vh; align-self: flex-start; }
+    .main      { overflow: visible !important; }
+    .main-body { /* sem overflow próprio — deixa o body rolar */ }
     .sec-content { padding: 20px 28px; max-width: 1200px; }
 
     /* ── Topbar extra ── */
