@@ -92,16 +92,16 @@ def _add_header(ws, logo_path, title: str, subtitle: str,
                 last_col="H", n_merge_cols=8) -> int:
     """Insere cabeçalho com logo e retorna a próxima linha livre."""
     # Linha 1 — faixa navy com logo em A e título em B:last_col
-    ws.row_dimensions[1].height = 60
+    ws.row_dimensions[1].height = 56
 
     ws["A1"].fill = _fill(NAVY)
 
-    # Logo proporcional à altura da linha (56px)
+    # Logo 50×50px — cabe exatamente na coluna A (width=8 ≈ 61px) sem transbordar para B
     if logo_path and logo_path.exists():
         try:
             img = XLImage(str(logo_path))
-            img.height = 52
-            img.width  = 52
+            img.height = 50
+            img.width  = 50
             img.anchor = "A1"
             ws.add_image(img)
         except Exception:
@@ -136,9 +136,9 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
     ws.title = "Resumo"
     ws.sheet_view.showGridLines = False
 
-    # Larguras — A-F: 6 colunas dos KPIs; G: espaçador; H-M: tabela/gráfico auxiliar
-    widths = {"A":18,"B":18,"C":18,"D":18,"E":18,"F":18,"G":3,
-              "H":26,"I":8,"J":8,"K":10,"L":10,"M":10}
+    # Larguras — A: logo estreito (8≈61px); B-G: 6 KPIs; H: espaçador; I-N: gráfico
+    widths = {"A":8,"B":18,"C":18,"D":18,"E":18,"F":18,"G":18,"H":3,
+              "I":26,"J":8,"K":8,"L":10,"M":10,"N":10}
     for col, w in widths.items():
         ws.column_dimensions[col].width = w
 
@@ -146,10 +146,11 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         ws, logo_path,
         "Auditoria de Segurança",
         f"Gerado em {summary['generated_at']}   ·   {summary['total_projects']} projetos analisados   ·   Confidencial — uso interno",
+        last_col="G",
     )
 
-    # ── Seção KPIs ──
-    _section_title(ws, next_row, "Indicadores principais", "A:F")
+    # ── Seção KPIs (colunas B-G) ──
+    _section_title(ws, next_row, "Indicadores principais", "B:G")
     next_row += 1
     _spacer(ws, next_row, 6); next_row += 1
 
@@ -163,9 +164,9 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
          (INFO_BG, INFO_FG)),
     ]
 
-    # Linha de valores
+    # Linha de valores — começa na coluna 2 (B)
     ws.row_dimensions[next_row].height = 44
-    for i, (label, val, (bg, fg)) in enumerate(kpis, 1):
+    for i, (label, val, (bg, fg)) in enumerate(kpis, 2):
         c = ws.cell(row=next_row, column=i, value=val)
         c.font = Font(name="Calibri", bold=True, size=24, color=fg)
         c.fill = _fill(bg)
@@ -174,9 +175,9 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
 
     next_row += 1
 
-    # Linha de labels
+    # Linha de labels — começa na coluna 2 (B)
     ws.row_dimensions[next_row].height = 34
-    for i, (label, _, (bg, fg)) in enumerate(kpis, 1):
+    for i, (label, _, (bg, fg)) in enumerate(kpis, 2):
         c = ws.cell(row=next_row, column=i, value=label)
         c.font = _font(bold=True, size=9, color=TEXT_MED)
         c.fill = _fill(GRAY_H)
@@ -186,8 +187,8 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
     next_row += 1
     _spacer(ws, next_row, 14); next_row += 1
 
-    # ── Glossário ──
-    _section_title(ws, next_row, "Glossário — o que significa cada indicador", "A:F")
+    # ── Glossário (colunas B-G) ──
+    _section_title(ws, next_row, "Glossário — o que significa cada indicador", "B:G")
     next_row += 1
     _spacer(ws, next_row, 6); next_row += 1
 
@@ -202,32 +203,32 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
 
     for term, expl in gloss:
         ws.row_dimensions[next_row].height = 22
-        ct = ws.cell(row=next_row, column=1, value=term)
+        ct = ws.cell(row=next_row, column=2, value=term)
         ct.font = _font(bold=True, size=9, color=NAVY)
         ct.fill = _fill(GRAY_L)
         ct.alignment = _align("left", "center")
         ct.border = _border(color=BORDER_C)
 
-        ce = ws.cell(row=next_row, column=2, value=expl)
+        ce = ws.cell(row=next_row, column=3, value=expl)
         ce.font = _font(size=9, color=TEXT_MED)
         ce.alignment = _align("left", "center", wrap=True)
         ce.fill = _fill(WHITE)
         ce.border = _border(color=BORDER_C)
-        ws.merge_cells(f"B{next_row}:F{next_row}")
+        ws.merge_cells(f"C{next_row}:G{next_row}")
         next_row += 1
 
     _spacer(ws, next_row, 14); next_row += 1
 
-    # ── Gráfico (posicionado à direita dos KPIs, coluna H linha 4) ──
+    # ── Gráfico (coluna I linha 4, ao lado dos KPIs) ──
     projs = [p for p in summary["projects"]
              if sum([p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]]) > 0]
     projs.sort(key=lambda p: sum([p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]]), reverse=True)
     top = projs[:6]
 
     if top:
-        # Tabela auxiliar nas linhas 100-107 — fora da área visível, não conflita com KPIs
+        # Tabela auxiliar linha 100+ — fora da área visível, não conflita com KPIs
         chart_data_row = 100
-        chart_cols_start = 8   # coluna H
+        chart_cols_start = 9   # coluna I
 
         for ci, label in enumerate(["Projeto","CVEs","SAST","Seg. git","Seg. disco","Licenças"], chart_cols_start):
             ws.cell(row=chart_data_row, column=ci, value=label)
@@ -238,7 +239,7 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
             for ci, val in enumerate([p["name"],p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]], chart_cols_start):
                 ws.cell(row=row, column=ci, value=val)
 
-        col_h_letter = get_column_letter(chart_cols_start)
+        col_i_letter = get_column_letter(chart_cols_start)
 
         chart = BarChart()
         chart.type = "bar"
@@ -247,8 +248,7 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         chart.style = 26
         chart.width = 22
         chart.height = 14
-        # Em BarChart horizontal: x_axis = categorias (esquerdo), y_axis = valores (inferior)
-        chart.x_axis.title = None              # nomes dos projetos já aparecem no eixo
+        chart.x_axis.title = None
         chart.y_axis.title = "Quantidade de achados"
         chart.y_axis.numFmt = "0"
         chart.legend.position = "b"
@@ -262,8 +262,7 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         chart.add_data(data_ref, titles_from_data=True)
         chart.set_categories(cats)
 
-        # Ancora o gráfico logo abaixo do cabeçalho (linha 4), visível sem scroll
-        ws.add_chart(chart, f"{col_h_letter}4")
+        ws.add_chart(chart, f"{col_i_letter}4")
 
 # ── Aba 2 — Por projeto ───────────────────────────────────────────────────────
 
