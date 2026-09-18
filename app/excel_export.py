@@ -136,14 +136,15 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
     ws.title = "Resumo"
     ws.sheet_view.showGridLines = False
 
-    # Larguras
-    widths = {"A":28,"B":20,"C":20,"D":22,"E":20,"F":20,"G":16,"H":16}
+    # Larguras — A-F: 6 colunas dos KPIs; G: espaçador; H-M: tabela/gráfico auxiliar
+    widths = {"A":18,"B":18,"C":18,"D":18,"E":18,"F":18,"G":3,
+              "H":26,"I":8,"J":8,"K":10,"L":10,"M":10}
     for col, w in widths.items():
         ws.column_dimensions[col].width = w
 
     next_row = _add_header(
         ws, logo_path,
-        "Finaud — Auditoria de Segurança",
+        "Auditoria de Segurança",
         f"Gerado em {summary['generated_at']}   ·   {summary['total_projects']} projetos analisados   ·   Confidencial — uso interno",
     )
 
@@ -217,49 +218,65 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
 
     _spacer(ws, next_row, 14); next_row += 1
 
-    # ── Gráfico ──
+    # ── Gráfico (posicionado à direita dos KPIs, coluna H linha 4) ──
     projs = [p for p in summary["projects"]
              if sum([p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]]) > 0]
     projs.sort(key=lambda p: sum([p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]]), reverse=True)
     top = projs[:6]
 
     if top:
-        _section_title(ws, next_row, "Projetos com maior número de achados (top 6)", "A:F")
-        next_row += 1
-        _spacer(ws, next_row, 6); next_row += 1
+        # Tabela de dados auxiliar: colunas H-M, a partir da linha 5 (logo abaixo do cabeçalho)
+        chart_data_row = 5
+        chart_cols_start = 8   # coluna H
 
-        # Tabela de dados para o gráfico (oculta)
-        data_start = next_row
-        _header_row(ws, next_row, ["Projeto","CVEs","SAST","Seg. git","Seg. disco","Licenças"])
-        next_row += 1
-        for p in top:
-            ws.row_dimensions[next_row].height = 18
-            for col, val in enumerate([p["name"],p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]], 1):
-                c = ws.cell(row=next_row, column=col, value=val)
-                c.font = _font(size=9)
-                c.border = _border(color=BORDER_C)
-                c.alignment = _align("center" if col > 1 else "left")
-            next_row += 1
+        # Linha de cabeçalho da tabela auxiliar
+        for ci, label in enumerate(["Projeto","CVEs","SAST","Seg. git","Seg. disco","Licenças"], chart_cols_start):
+            c = ws.cell(row=chart_data_row, column=ci, value=label)
+            c.fill = _fill(NAVY)
+            c.font = _font(bold=True, color=WHITE, size=8)
+            c.alignment = _align("center", "center")
+            c.border = _border(color="1E3A5F")
+        ws.row_dimensions[chart_data_row].height = 18
 
         n = len(top)
+        for ri, p in enumerate(top):
+            row = chart_data_row + 1 + ri
+            ws.row_dimensions[row].height = 16
+            for ci, val in enumerate([p["name"],p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]], chart_cols_start):
+                c = ws.cell(row=row, column=ci, value=val)
+                c.font = _font(size=8)
+                c.fill = _fill(GRAY_L if ri % 2 == 0 else WHITE)
+                c.border = _border(color=BORDER_C)
+                c.alignment = _align("center" if ci > chart_cols_start else "left")
+
+        # Título da seção do gráfico (coluna H)
+        col_h_letter = get_column_letter(chart_cols_start)
+        col_m_letter = get_column_letter(chart_cols_start + 5)
+
         chart = BarChart()
         chart.type = "bar"
         chart.grouping = "stacked"
-        chart.title = "Achados por projeto (top 6)"
-        chart.style = 26          # estilo azul monocromático
-        chart.width = 22
-        chart.height = 12
+        chart.title = "Achados por projeto — top " + str(n)
+        chart.style = 26
+        chart.width = 20
+        chart.height = 13
         chart.x_axis.numFmt = "0"
         chart.x_axis.title = "Quantidade de achados"
-        chart.y_axis.title = "Projeto"
-        chart.legend.position = "b"  # legenda abaixo do gráfico
+        chart.y_axis.title = None          # nomes dos projetos já aparecem nas barras
+        chart.legend.position = "b"
 
-        cats = Reference(ws, min_col=1, min_row=data_start+1, max_row=data_start+n)
-        data_ref = Reference(ws, min_col=2, min_row=data_start, max_col=6, max_row=data_start+n)
+        data_ref = Reference(ws,
+            min_col=chart_cols_start + 1, min_row=chart_data_row,
+            max_col=chart_cols_start + 5, max_row=chart_data_row + n)
+        cats = Reference(ws,
+            min_col=chart_cols_start, min_row=chart_data_row + 1,
+            max_row=chart_data_row + n)
         chart.add_data(data_ref, titles_from_data=True)
         chart.set_categories(cats)
 
-        ws.add_chart(chart, f"H{data_start}")
+        # Ancora o gráfico abaixo da tabela auxiliar (linha chart_data_row + n + 2)
+        chart_anchor_row = chart_data_row + n + 2
+        ws.add_chart(chart, f"{col_h_letter}{chart_anchor_row}")
 
 # ── Aba 2 — Por projeto ───────────────────────────────────────────────────────
 
@@ -271,7 +288,7 @@ def _aba_projetos(wb: Workbook, summary: dict, logo_path) -> None:
         ws.column_dimensions[col].width = w
 
     next_row = _add_header(ws, logo_path,
-        "Finaud — Situação por Projeto",
+        "Situação por Projeto",
         f"Gerado em {summary['generated_at']}   ·   verde = limpo   ·   amarelo = monitorar   ·   vermelho = ação necessária",
     )
     _spacer(ws, next_row, 6); next_row += 1
@@ -349,7 +366,7 @@ def _aba_achados(wb: Workbook, summary: dict, logo_path) -> None:
         ws.column_dimensions[col].width = w
 
     next_row = _add_header(ws, logo_path,
-        "Finaud — Achados Detalhados",
+        "Achados Detalhados",
         f"Gerado em {summary['generated_at']}   ·   ordenado por gravidade",
         last_col="G",
     )
@@ -417,7 +434,7 @@ def _aba_historico(wb: Workbook, history: list[dict], summary: dict, logo_path) 
         ws.column_dimensions[col].width = w
 
     next_row = _add_header(ws, logo_path,
-        "Finaud — Histórico de Auditorias",
+        "Histórico de Auditorias",
         "Evolução ao longo do tempo — cada linha é uma auditoria rodada",
     )
     _spacer(ws, next_row, 6); next_row += 1
