@@ -91,34 +91,38 @@ def _sev_label(s: str) -> str:
 def _add_header(ws, logo_path, title: str, subtitle: str,
                 last_col="H", n_merge_cols=8) -> int:
     """Insere cabeçalho com logo e retorna a próxima linha livre."""
-    # Linha 1 — faixa azul escura
     ws.row_dimensions[1].height = 52
-    ws.merge_cells(f"A1:{last_col}1")
-    c = ws["A1"]
-    c.fill = _fill(NAVY)
-    c.font = _font(bold=True, color=WHITE, size=15)
-    c.alignment = _align("left", "center")
-    c.value = f"      {title}"
 
-    # Logo
+    # Coluna A — fundo navy reservado para o logo
+    ws["A1"].fill = _fill(NAVY)
+
+    # Logo pequeno ancorado em A1 (não cobre o texto)
     if logo_path and logo_path.exists():
         try:
             img = XLImage(str(logo_path))
-            img.height = 36
-            img.width  = 110
+            img.height = 40
+            img.width  = 40
             img.anchor = "A1"
             ws.add_image(img)
         except Exception:
             pass
 
-    # Linha 2 — subtítulo
+    # Colunas B:last_col — título
+    ws.merge_cells(f"B1:{last_col}1")
+    c = ws["B1"]
+    c.fill = _fill(NAVY)
+    c.font = _font(bold=True, color=WHITE, size=15)
+    c.alignment = _align("left", "center")
+    c.value = f"  {title}"
+
+    # Linha 2 — subtítulo (A:last_col inteiro)
     ws.row_dimensions[2].height = 22
     ws.merge_cells(f"A2:{last_col}2")
     s = ws["A2"]
     s.fill  = _fill(BLUE_LIGHT)
     s.font  = _font(color=NAVY, size=9, italic=True)
     s.alignment = _align("left", "center")
-    s.value = f"      {subtitle}"
+    s.value = f"  {subtitle}"
     s.border = Border(bottom=_side("thin", BLUE_MID))
 
     # Linha 3 — espaçador
@@ -241,13 +245,14 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         chart = BarChart()
         chart.type = "bar"
         chart.grouping = "stacked"
-        chart.title = None
-        chart.style = 2
+        chart.title = "Achados por projeto (top 6)"
+        chart.style = 26          # estilo azul monocromático
         chart.width = 22
-        chart.height = 11
-        chart.y_axis.numFmt = "0"
-        chart.x_axis.title = None
-        chart.y_axis.title = None
+        chart.height = 12
+        chart.x_axis.numFmt = "0"
+        chart.x_axis.title = "Quantidade de achados"
+        chart.y_axis.title = "Projeto"
+        chart.legend.position = "b"  # legenda abaixo do gráfico
 
         cats = Reference(ws, min_col=1, min_row=data_start+1, max_row=data_start+n)
         data_ref = Reference(ws, min_col=2, min_row=data_start, max_col=6, max_row=data_start+n)
@@ -447,10 +452,11 @@ def _aba_historico(wb: Workbook, history: list[dict], summary: dict, logo_path) 
         data_end = data_start + len(history) - 1
         chart = LineChart()
         chart.title = "Evolução de achados por auditoria"
-        chart.style = 2
+        chart.style = 26
         chart.width = 24; chart.height = 12
-        chart.y_axis.title = "Quantidade"
-        chart.x_axis.title = None
+        chart.y_axis.title = "Quantidade de achados"
+        chart.x_axis.title = "Data da auditoria"
+        chart.legend.position = "b"
 
         cats    = Reference(ws, min_col=1, min_row=data_start, max_row=data_end)
         data_ref = Reference(ws, min_col=2, min_row=data_start-1, max_col=6, max_row=data_end)
