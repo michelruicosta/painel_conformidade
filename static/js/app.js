@@ -147,22 +147,13 @@ if (typeof DOCS !== 'undefined') {
     chevron.classList.toggle('open', !isOpen);
   }
 
-  function toggleCat(btn, id, catNome) {
-    var list = document.getElementById(id);
-    var chevron = btn.querySelector('.nav-chevron');
-    var isOpen = list.classList.contains('open');
-    list.classList.toggle('open', !isOpen);
-    chevron.classList.toggle('open', !isOpen);
+  function navCat(btn, catNome) {
     document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('active'); });
     btn.classList.add('active');
-    if (!isOpen) {
-      renderCategoria(catNome);
-    } else {
-      document.getElementById('filter-bar').style.display = 'flex';
-      document.getElementById('topbar-title').textContent = 'Visão Geral';
-      setFiltro(filtroAtual);
-    }
+    renderCategoria(catNome);
   }
+
+  function toggleCat(btn, id, catNome) { navCat(btn, catNome); }
 
   /* ── Tabela de categoria ── */
   function catRowHTML(d) {
@@ -212,6 +203,7 @@ if (typeof DOCS !== 'undefined') {
   /* Expõe funções globais usadas pelo template */
   window.setFiltro       = setFiltro;
   window.navDash         = navDash;
+  window.navCat          = navCat;
   window.toggleSec       = toggleSec;
   window.toggleCat       = toggleCat;
   window.renderCategoria = renderCategoria;

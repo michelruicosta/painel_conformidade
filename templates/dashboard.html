@@ -6,7 +6,7 @@
   <title>Painel de Conformidade — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=14">
+  <link rel="stylesheet" href="/static/css/style.css?v=15">
 </head>
 <body>
 
@@ -44,21 +44,11 @@
       <div class="nav-section" id="sec-docs">
         {% for cat, cat_docs in por_categoria.items() %}
         {% set n_alerta = (cat_docs | selectattr("status", "equalto", "vencido") | list | length) + (cat_docs | selectattr("status", "equalto", "atencao") | list | length) %}
-        <button class="nav-item nav-sub" onclick="toggleCat(this,'cat-{{ loop.index }}','{{ cat }}')">
+        <button class="nav-item nav-sub" onclick="navCat(this,'{{ cat }}')">
           <span class="nav-nome">{{ cat }}</span>
           <span class="nav-count">{{ cat_docs | length }}</span>
           {% if n_alerta > 0 %}<span class="nav-dot"></span>{% endif %}
-          <span class="nav-chevron">›</span>
         </button>
-        <div class="sub-list" id="cat-{{ loop.index }}">
-          {% for d in cat_docs %}
-          <a class="sub-item {% if d.status in ['vencido','atencao'] %}sub-alerta{% endif %}"
-             href="/ver/{{ d.id }}" target="_blank">
-            {% if d.status in ['vencido','atencao'] %}<span class="sub-dot"></span>{% endif %}
-            {{ d.nome }}
-          </a>
-          {% endfor %}
-        </div>
         {% endfor %}
       </div>
 
@@ -105,6 +95,6 @@
 </div>
 
 <script>const DOCS = {{ docs_json | safe }};</script>
-<script src="/static/js/app.js?v=6"></script>
+<script src="/static/js/app.js?v=7"></script>
 </body>
 </html>
