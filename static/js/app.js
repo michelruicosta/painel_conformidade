@@ -164,23 +164,18 @@ if (typeof DOCS !== 'undefined') {
     }
   }
 
-  /* ── Cards de categoria ── */
-  function catCardHTML(d) {
+  /* ── Tabela de categoria ── */
+  function catRowHTML(d) {
     var cls = urgClass(d.dias);
-    var prazo = prazoStr(d.dias, d.prazo_str);
     var statusMap = { vencido: 'Vencido', urgente: 'Urgente', breve: 'Vence em breve', ok: 'Em dia' };
     var statusLabel = statusMap[cls] || 'Em dia';
-    return '<a class="cat-card cat-card-' + cls + '" href="/ver/' + d.id + '">' +
-      '<div class="cat-card-body">' +
-        '<div class="cat-card-nome">' + d.nome + '</div>' +
-        '<div class="cat-card-meta">' +
-          '<span class="cat-tag">' + d.periodicidade + '</span>' +
-          '<span class="cat-prazo">' + prazo + '</span>' +
-          '<span class="cat-status cat-status-' + cls + '">' + statusLabel + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<span class="cat-abrir">Abrir →</span>' +
-    '</a>';
+    return '<tr class="cat-row cat-row-' + cls + '">' +
+      '<td class="cat-td-nome">' + d.nome + '</td>' +
+      '<td class="cat-td-period">' + d.periodicidade + '</td>' +
+      '<td class="cat-td-data">' + (d.prazo_str || '—') + '</td>' +
+      '<td class="cat-td-status"><span class="cat-status cat-status-' + cls + '">' + statusLabel + '</span></td>' +
+      '<td class="cat-td-abrir"><a href="/ver/' + d.id + '" class="cat-abrir">Abrir →</a></td>' +
+    '</tr>';
   }
 
   function renderCategoria(catNome) {
@@ -196,8 +191,17 @@ if (typeof DOCS !== 'undefined') {
         '<div class="secao-linha"></div>' +
         '<span style="font-size:12px;color:var(--muted)">' + docs.length + ' documento' + (docs.length !== 1 ? 's' : '') + '</span>' +
       '</div>' +
-      '<div class="cat-lista">' +
-        docs.map(catCardHTML).join('<div class="cat-sep"></div>') +
+      '<div class="cat-wrap">' +
+        '<table class="cat-table">' +
+          '<thead><tr>' +
+            '<th>' + catNome + '</th>' +
+            '<th>Periodicidade</th>' +
+            '<th>Data</th>' +
+            '<th>Status</th>' +
+            '<th></th>' +
+          '</tr></thead>' +
+          '<tbody>' + docs.map(catRowHTML).join('') + '</tbody>' +
+        '</table>' +
       '</div>' +
     '</div>';
     document.getElementById('content').innerHTML = html;
