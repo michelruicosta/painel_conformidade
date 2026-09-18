@@ -225,23 +225,18 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
     top = projs[:6]
 
     if top:
-        # Tabela de dados auxiliar: colunas H-M, a partir da linha 5 (logo abaixo do cabeçalho)
-        chart_data_row = 5
+        # Tabela auxiliar nas linhas 100-107 — fora da área visível, não conflita com KPIs
+        chart_data_row = 100
         chart_cols_start = 8   # coluna H
 
-        # Tabela auxiliar oculta — dados para o gráfico (linhas escondidas)
         for ci, label in enumerate(["Projeto","CVEs","SAST","Seg. git","Seg. disco","Licenças"], chart_cols_start):
-            c = ws.cell(row=chart_data_row, column=ci, value=label)
-        ws.row_dimensions[chart_data_row].height = 1
-        ws.row_dimensions[chart_data_row].hidden = True
+            ws.cell(row=chart_data_row, column=ci, value=label)
 
         n = len(top)
         for ri, p in enumerate(top):
             row = chart_data_row + 1 + ri
             for ci, val in enumerate([p["name"],p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]], chart_cols_start):
                 ws.cell(row=row, column=ci, value=val)
-            ws.row_dimensions[row].height = 1
-            ws.row_dimensions[row].hidden = True
 
         col_h_letter = get_column_letter(chart_cols_start)
 
