@@ -6,7 +6,7 @@
   <title>Painel de Conformidade — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=15">
+  <link rel="stylesheet" href="/static/css/style.css?v=17">
 </head>
 <body>
 
@@ -24,6 +24,7 @@
           <div class="brand-sub">Painel de Conformidade</div>
         </div>
       </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">‹</button>
     </div>
 
     <nav class="sidebar-nav">
@@ -96,5 +97,13 @@
 
 <script>const DOCS = {{ docs_json | safe }};</script>
 <script src="/static/js/app.js?v=7"></script>
+<script>
+function toggleSidebar() {
+  var s = document.querySelector('.sidebar');
+  s.classList.toggle('collapsed');
+  try { localStorage.setItem('sb', s.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+}
+try { if (localStorage.getItem('sb') === '1') document.querySelector('.sidebar').classList.add('collapsed'); } catch(e) {}
+</script>
 </body>
 </html>

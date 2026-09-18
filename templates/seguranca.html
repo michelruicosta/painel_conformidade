@@ -6,7 +6,7 @@
   <title>Segurança — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=13">
+  <link rel="stylesheet" href="/static/css/style.css?v=17">
   <style>
     /* ── Variáveis locais ── */
     :root {
@@ -125,20 +125,19 @@
     .kpi-mini.info .kpi-num { color: #60a5fa; }
 
     /* Tooltip ? */
-    .tt-wrap { display:inline-block; position:relative; }
+    .tt-wrap { position:absolute; top:7px; right:7px; z-index:100; }
     .tt-icon {
       display:inline-flex; align-items:center; justify-content:center;
       width:14px; height:14px; border-radius:50%; border:1px solid var(--border);
       font-size:8px; font-weight:600; color:var(--muted);
-      cursor:pointer; vertical-align:middle; user-select:none;
-      position:absolute; top:7px; right:7px;
+      cursor:pointer; user-select:none;
     }
     .tt-box {
-      display:none; position:absolute; bottom:calc(100% + 6px); right:0;
+      display:none; position:fixed;
       background:var(--card); border:1px solid var(--border);
       border-radius:8px; padding:10px 13px; width:220px;
       font-size:.78rem; line-height:1.5; color:var(--muted);
-      z-index:200; box-shadow:0 4px 16px rgba(0,0,0,.12);
+      z-index:999; box-shadow:0 4px 16px rgba(0,0,0,.2);
     }
     .tt-box strong { color:var(--text); }
     .tt-wrap:hover .tt-box,
@@ -260,6 +259,7 @@
           <div class="brand-sub">Painel de Conformidade</div>
         </div>
       </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">‹</button>
     </div>
     <nav class="sidebar-nav">
       <a href="/" class="nav-item" style="text-decoration:none">
@@ -681,6 +681,28 @@ function startPolling() {
 
 fetch('/seguranca/status').then(r => r.json()).then(st => {
   if (st.running) { updateBtn(st); startPolling(); }
+});
+</script>
+<script>
+function toggleSidebar() {
+  var s = document.querySelector('.sidebar');
+  s.classList.toggle('collapsed');
+  try { localStorage.setItem('sb', s.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+}
+try { if (localStorage.getItem('sb') === '1') document.querySelector('.sidebar').classList.add('collapsed'); } catch(e) {}
+
+document.querySelectorAll('.tt-wrap').forEach(function(wrap) {
+  var icon = wrap.querySelector('.tt-icon');
+  var box  = wrap.querySelector('.tt-box');
+  function pos() {
+    var r = icon.getBoundingClientRect();
+    var top = r.bottom + 6;
+    var left = Math.max(8, Math.min(r.right - 220, window.innerWidth - 228));
+    box.style.top  = top  + 'px';
+    box.style.left = left + 'px';
+  }
+  wrap.addEventListener('mouseenter', pos);
+  wrap.addEventListener('click', pos);
 });
 </script>
 

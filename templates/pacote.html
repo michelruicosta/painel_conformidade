@@ -6,7 +6,7 @@
   <title>Auditoria — Finaud</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/css/style.css?v=13">
+  <link rel="stylesheet" href="/static/css/style.css?v=17">
   <style>
     /* Tabs de categoria */
     .tab-nav {
@@ -140,6 +140,7 @@
           <div class="brand-sub">Painel de Conformidade</div>
         </div>
       </div>
+      <button class="sidebar-toggle" onclick="toggleSidebar()" title="Recolher menu">‹</button>
     </div>
 
     <nav class="sidebar-nav">
@@ -230,6 +231,12 @@
 </div>
 
 <script>
+function toggleSidebar() {
+  var s = document.querySelector('.sidebar');
+  s.classList.toggle('collapsed');
+  try { localStorage.setItem('sb', s.classList.contains('collapsed') ? '1' : '0'); } catch(e) {}
+}
+try { if (localStorage.getItem('sb') === '1') document.querySelector('.sidebar').classList.add('collapsed'); } catch(e) {}
 function switchTab(btn, panelId) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
