@@ -4,3 +4,4 @@ __pycache__/
 *.db
 .env
 uvicorn_*.log
+word_temp/
