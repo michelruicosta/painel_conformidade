@@ -131,25 +131,32 @@
   <!-- ── Sidebar ── -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="/static/img/logo_finaud.png" alt="Finaud" style="height:22px;width:auto;opacity:.9;display:block;">
+      <img src="/static/img/logo_finaud.png" alt="Finaud">
       <div class="brand-sub">Painel de Conformidade</div>
     </div>
 
     <nav class="sidebar-nav">
-      <div class="nav-label">Visão geral</div>
       <a href="/" class="nav-item" style="text-decoration:none">
-        <span class="nav-icon">◉</span> Dashboard
+        <span class="nav-icon">◉</span>
+        <span class="nav-nome">Visão Geral</span>
       </a>
-
-      <div class="nav-label">Relatórios</div>
+      <a href="/" class="nav-item" style="text-decoration:none">
+        <span class="nav-icon">📁</span>
+        <span class="nav-nome">Documentos</span>
+      </a>
       <a href="/pacote" class="nav-item active" style="text-decoration:none">
         <span class="nav-icon">📋</span>
-        <span class="nav-nome">Auditoria</span>
+        <span class="nav-nome">Auditorias</span>
       </a>
-      <a href="/seguranca" class="nav-item" style="text-decoration:none">
-        <span class="nav-icon">🔒</span>
-        <span class="nav-nome">Segurança</span>
-      </a>
+      <div class="nav-item" style="cursor:default;opacity:.7">
+        <span class="nav-icon">⚙</span>
+        <span class="nav-nome">Administrador</span>
+      </div>
+      <div class="nav-section open">
+        <a href="/seguranca" class="sub-item" style="text-decoration:none">
+          🔒 Segurança
+        </a>
+      </div>
     </nav>
   </aside>
 

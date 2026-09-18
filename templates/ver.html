@@ -66,7 +66,7 @@
       margin-bottom: 24px;
     }
 
-    .cab-logo img { height: 44px; }
+    .cab-logo img { height: 40px; width: auto; display: block; }
 
     .cab-empresa {
       text-align: right;
@@ -251,9 +251,6 @@
 <div class="acoes-tela">
   <a href="/" class="btn btn-vol">← Painel</a>
   <button class="btn btn-pri" onclick="window.print()">🖨 Imprimir / Salvar PDF</button>
-  {% if not eh_pdf %}
-  <a href="/abrir/{{ doc.id }}" class="btn">✏ Abrir no editor</a>
-  {% endif %}
 </div>
 
 <div class="doc">
@@ -261,7 +258,7 @@
   <!-- Cabeçalho com logo -->
   <div class="cabecalho">
     <div class="cab-logo">
-      <img src="/static/img/logo_finaud.png" alt="Finaud Tec">
+      <img src="/static/img/logo_finaud_claro.png" alt="Finaud Tec">
     </div>
     <div class="cab-empresa">
       <strong>FINAUD TEC SOLUCOES COM TECNOLOGIA LTDA.</strong>

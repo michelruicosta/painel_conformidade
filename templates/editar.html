@@ -6,8 +6,7 @@
   <title>Revisar — {{ doc.nome }}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap">
-  <link rel="stylesheet" href="/static/vendor/easymde.min.css">
-  <link rel="stylesheet" href="/static/css/style.css?v=7">
+  <link rel="stylesheet" href="/static/css/style.css?v=8">
 </head>
 <body class="ed-page">
 
@@ -28,24 +27,47 @@
   </div>
 </div>
 
-<form method="POST" action="/editar/{{ doc.id }}" class="ed-body" id="ed-form">
+<div class="ed-body">
 
-  <!-- ── Editor ── -->
-  <div class="ed-editor">
+  <!-- ── Prévia do documento ── -->
+  <div class="ed-preview">
     {% if tem_arquivo %}
-    <textarea id="ed-conteudo" name="conteudo">{{ conteudo }}</textarea>
+    <div class="ed-open-word">
+      {% if tem_word_pendente %}
+      <div class="ed-alerta-pendente">
+        <span class="ed-alerta-ico">⚠️</span>
+        <div class="ed-alerta-corpo">
+          <strong>Edição pendente no Word</strong>
+          <span>Você já abriu este documento no Word e ainda não registrou a revisão. Salve no Word (Ctrl+S) e clique em "Registrar revisão", ou descarte para começar do zero.</span>
+        </div>
+        {% if aviso == 'feche-o-word' %}
+        <span class="btn-descartar" style="background:var(--amber-bd);cursor:default">Feche o Word primeiro</span>
+        {% else %}
+        <a href="/descartar-word/{{ doc.id }}" class="btn-descartar" onclick="return confirm('Descartar as alterações feitas no Word?')">Descartar</a>
+        {% endif %}
+      </div>
+      <button id="btn-word" class="btn-word" onclick="abrirWord()">
+        📝 Reabrir no Word
+      </button>
+      {% else %}
+      <button id="btn-word" class="btn-word" onclick="abrirWord()">
+        📝 Abrir no Word para editar
+      </button>
+      <p class="ed-hint">Edite no Word, salve (Ctrl+S) e volte aqui para registrar a revisão.</p>
+      {% endif %}
+    </div>
+    <div class="ed-doc-content">{{ conteudo_html | safe }}</div>
     {% else %}
     <div class="ed-sem-arquivo">
       <div class="ed-sem-ico">📄</div>
       <div class="ed-sem-t">Sem arquivo vinculado</div>
       <div class="ed-sem-sub">A revisão será registrada sem edição de conteúdo.</div>
     </div>
-    <input type="hidden" name="conteudo" value="">
     {% endif %}
   </div>
 
   <!-- ── Formulário de revisão ── -->
-  <div class="ed-aside">
+  <form method="POST" action="/editar/{{ doc.id }}" class="ed-aside" id="ed-form">
     <div class="ed-aside-titulo">Registrar revisão</div>
 
     <div class="ed-versao-info">
@@ -69,35 +91,25 @@
     </div>
 
     <div class="ed-acoes">
-      <button type="submit" class="btn btn-pri">Salvar e registrar</button>
+      <button type="submit" class="btn btn-pri">Registrar revisão</button>
       <a href="/" class="btn btn-sec">Cancelar</a>
     </div>
-  </div>
+  </form>
 
-</form>
+</div>
 
-<script src="/static/vendor/easymde.min.js"></script>
-<script src="/static/js/app.js?v=7"></script>
+<script src="/static/js/app.js?v=8"></script>
 <script>
-  var textarea = document.getElementById('ed-conteudo');
-  if (textarea) {
-    var easyMDE = new EasyMDE({
-      element: textarea,
-      spellChecker: false,
-      autosave: { enabled: false },
-      sideBySideFullscreen: false,
-      toolbar: [
-        'bold', 'italic', 'strikethrough', '|',
-        'heading-1', 'heading-2', 'heading-3', '|',
-        'unordered-list', 'ordered-list', '|',
-        'table', 'horizontal-rule', '|',
-        'preview', 'side-by-side', '|',
-        'guide'
-      ],
-      status: false,
-      tabSize: 2,
-      promptURLs: true,
-    });
+  function abrirWord() {
+    var btn = document.getElementById('btn-word');
+    btn.disabled = true;
+    btn.textContent = 'Abrindo...';
+    fetch('/abrir/{{ doc.id }}?ajax=1')
+      .then(function(r) { return r.json(); })
+      .finally(function() {
+        btn.disabled = false;
+        btn.textContent = '📝 Abrir no Word para editar';
+      });
   }
 
   (function () {
