@@ -91,31 +91,31 @@ def _sev_label(s: str) -> str:
 def _add_header(ws, logo_path, title: str, subtitle: str,
                 last_col="H", n_merge_cols=8) -> int:
     """Insere cabeçalho com logo e retorna a próxima linha livre."""
-    ws.row_dimensions[1].height = 52
+    # Linha 1 — faixa navy com logo em A e título em B:last_col
+    ws.row_dimensions[1].height = 60
 
-    # Coluna A — fundo navy reservado para o logo
     ws["A1"].fill = _fill(NAVY)
 
-    # Logo pequeno ancorado em A1 (não cobre o texto)
+    # Logo proporcional à altura da linha (56px)
     if logo_path and logo_path.exists():
         try:
             img = XLImage(str(logo_path))
-            img.height = 40
-            img.width  = 40
+            img.height = 52
+            img.width  = 52
             img.anchor = "A1"
             ws.add_image(img)
         except Exception:
             pass
 
-    # Colunas B:last_col — título
+    # Título
     ws.merge_cells(f"B1:{last_col}1")
     c = ws["B1"]
     c.fill = _fill(NAVY)
-    c.font = _font(bold=True, color=WHITE, size=15)
+    c.font = _font(bold=True, color=WHITE, size=16)
     c.alignment = _align("left", "center")
     c.value = f"  {title}"
 
-    # Linha 2 — subtítulo (A:last_col inteiro)
+    # Linha 2 — subtítulo
     ws.row_dimensions[2].height = 22
     ws.merge_cells(f"A2:{last_col}2")
     s = ws["A2"]
@@ -229,40 +229,33 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         chart_data_row = 5
         chart_cols_start = 8   # coluna H
 
-        # Linha de cabeçalho da tabela auxiliar
+        # Tabela auxiliar oculta — dados para o gráfico (linhas escondidas)
         for ci, label in enumerate(["Projeto","CVEs","SAST","Seg. git","Seg. disco","Licenças"], chart_cols_start):
             c = ws.cell(row=chart_data_row, column=ci, value=label)
-            c.fill = _fill(NAVY)
-            c.font = _font(bold=True, color=WHITE, size=8)
-            c.alignment = _align("center", "center")
-            c.border = _border(color="1E3A5F")
-        ws.row_dimensions[chart_data_row].height = 18
+        ws.row_dimensions[chart_data_row].height = 1
+        ws.row_dimensions[chart_data_row].hidden = True
 
         n = len(top)
         for ri, p in enumerate(top):
             row = chart_data_row + 1 + ri
-            ws.row_dimensions[row].height = 16
             for ci, val in enumerate([p["name"],p["cves"],p["sast"],p["secrets_git"],p["secrets_disk"],p["licenses"]], chart_cols_start):
-                c = ws.cell(row=row, column=ci, value=val)
-                c.font = _font(size=8)
-                c.fill = _fill(GRAY_L if ri % 2 == 0 else WHITE)
-                c.border = _border(color=BORDER_C)
-                c.alignment = _align("center" if ci > chart_cols_start else "left")
+                ws.cell(row=row, column=ci, value=val)
+            ws.row_dimensions[row].height = 1
+            ws.row_dimensions[row].hidden = True
 
-        # Título da seção do gráfico (coluna H)
         col_h_letter = get_column_letter(chart_cols_start)
-        col_m_letter = get_column_letter(chart_cols_start + 5)
 
         chart = BarChart()
         chart.type = "bar"
         chart.grouping = "stacked"
         chart.title = "Achados por projeto — top " + str(n)
         chart.style = 26
-        chart.width = 20
-        chart.height = 13
-        chart.x_axis.numFmt = "0"
-        chart.x_axis.title = "Quantidade de achados"
-        chart.y_axis.title = None          # nomes dos projetos já aparecem nas barras
+        chart.width = 22
+        chart.height = 14
+        # Em BarChart horizontal: x_axis = categorias (esquerdo), y_axis = valores (inferior)
+        chart.x_axis.title = None              # nomes dos projetos já aparecem no eixo
+        chart.y_axis.title = "Quantidade de achados"
+        chart.y_axis.numFmt = "0"
         chart.legend.position = "b"
 
         data_ref = Reference(ws,
@@ -274,9 +267,8 @@ def _aba_resumo(wb: Workbook, summary: dict, logo_path) -> None:
         chart.add_data(data_ref, titles_from_data=True)
         chart.set_categories(cats)
 
-        # Ancora o gráfico abaixo da tabela auxiliar (linha chart_data_row + n + 2)
-        chart_anchor_row = chart_data_row + n + 2
-        ws.add_chart(chart, f"{col_h_letter}{chart_anchor_row}")
+        # Ancora o gráfico logo abaixo do cabeçalho (linha 4), visível sem scroll
+        ws.add_chart(chart, f"{col_h_letter}4")
 
 # ── Aba 2 — Por projeto ───────────────────────────────────────────────────────
 
